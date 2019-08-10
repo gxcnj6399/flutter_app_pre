@@ -261,7 +261,6 @@ class MainPageState extends State<MainPage>{
   }
 }
 
-
 class DrugBank extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
@@ -272,18 +271,11 @@ class DrugBank extends StatefulWidget{
 
 class DrugBankState extends State<DrugBank>{
   TextEditingController resultInfo = new TextEditingController(text:"");
-  Future getdata() async {
-      Firestore.instance.collection("DrugBank")
-          .where("國際條碼", isEqualTo: resultInfo.text)
-          .snapshots().listen((data) => data.documents.forEach((doc) => print(doc["中文"])));
-  }
-
-  Future getdata2()  {
-    final ref = FirebaseStorage.instance.ref().child('123');
-    var url =   ref.getDownloadURL();
-    print(url);
-  }
-
+  //Future getdata2()  {
+  //  final ref = FirebaseStorage.instance.ref().child('123');
+  //  var url =   ref.getDownloadURL();
+  //  print(url);
+  //}
 
   @override
   Widget build(BuildContext context) {
@@ -292,50 +284,7 @@ class DrugBankState extends State<DrugBank>{
       appBar: AppBar(title: Text("藥庫資訊"),),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
-            TextField(
-              controller: resultInfo,
-              onEditingComplete: (){
-                print(resultInfo.text);
-              },
-              decoration: InputDecoration(
-                  icon: Icon(Icons.desktop_windows),
-                  labelText: "輸入條碼",
-                  suffix: IconButton(icon: Icon(Icons.close), onPressed:() {
-                  FocusScope.of(context).requestFocus(new FocusNode());
-                  }
-                 ),
-              ),
-           ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-              RaisedButton(
-                child: Text("讀取"),
-                onPressed: (){
-                  var route = new MaterialPageRoute(
-                      builder:(BuildContext context) => DrugBankEdit(value:resultInfo.text),
-                  );
-                  Navigator.of(context).push(route);
-                  },
-              ),
-              RaisedButton(
-                child: Text("返回主頁面"),
-                onPressed: (){
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => MainPage()),
-                  );
-                },
-              ),
-                RaisedButton(
-                  child: Text("讀取"),
-                  onPressed: (){
-                    getdata2();
-                  },
-                ),
-            ],),
 
-            //Text(resultInfo.text,style: TextStyle(fontSize: 20.0),),
             StreamBuilder<QuerySnapshot>(
               stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: resultInfo.text).snapshots(),
                 builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
@@ -475,6 +424,48 @@ class DrugBankState extends State<DrugBank>{
                   );
                 }
             ),
+          TextField(
+            controller: resultInfo,
+            onEditingComplete: (){
+              print(resultInfo.text);
+            },
+            decoration: InputDecoration(
+                icon: Icon(Icons.desktop_windows),
+                labelText: "輸入條碼",
+                suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                  FocusScope.of(context).requestFocus(new FocusNode());
+                }
+                ),
+                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){})
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                child: Text("讀取"),
+                onPressed: (){
+                  var route = new MaterialPageRoute(
+                    builder:(BuildContext context) => DrugBankEdit(value:resultInfo.text),
+                  );
+                  Navigator.of(context).push(route);
+                },
+              ),
+              RaisedButton(
+                child: Text("返回主頁面"),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => MainPage()),
+                  );
+                },
+              ),
+              RaisedButton(
+                child: Text("讀取"),
+                onPressed: (){
+                },
+              ),
+            ],),
           ],
         ),
       ),
@@ -489,7 +480,6 @@ class DrugBankEdit extends StatefulWidget {
   _DrugBankEditState createState() => _DrugBankEditState();
 }
 
-
 class _DrugBankEditState extends State<DrugBankEdit> {
 
   TextEditingController resultNumber = TextEditingController(text:"");
@@ -497,20 +487,17 @@ class _DrugBankEditState extends State<DrugBankEdit> {
   TextEditingController resultPeriod = TextEditingController(text:"");
   TextEditingController resultLotNumber = TextEditingController(text:"");
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
         appBar: AppBar(title: Text("上傳"),),
-        body: SingleChildScrollView(
-      child:Column(children: <Widget>[
+        body:
           //Text("${widget.value}"),
-        StreamBuilder<QuerySnapshot>(
+          StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: widget.value).snapshots(),
             builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+
               if(!snapshot.hasData) return Text("loading...");
               return ListView(
                 shrinkWrap: true,
@@ -629,11 +616,11 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "代碼:",
+                                text: "系統代碼:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
-                                text: document["代碼"],
+                                text: document["系統代碼"],
                                 style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                               ),
                             ],
@@ -695,91 +682,116 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             ],
                           ),
                         ),
+                        TextField(
+                          controller: resultNumber,
+                          onEditingComplete: (){
+                            print(resultNumber.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "輸入數量",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                          ),
+                        ),
+                        TextField(
+                          controller: resultReceipt,
+                          onEditingComplete: (){
+                            print(resultReceipt.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "發票號碼",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                            suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                          ),
+                        ),
+                        TextField(
+                          controller: resultLotNumber,
+                          onEditingComplete: (){
+                            print(resultLotNumber.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "批號",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                            suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                          ),
+                        ),
+                        TextField(
+                          controller: resultPeriod,
+                          onEditingComplete: (){
+                            print(resultPeriod.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "效期",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                            suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                          ),
+                        ),
+                        RaisedButton(
+                            child: Text("掃描"),
+                            onPressed: (){}
+                            ),
                         RaisedButton(
                             child: Text("確認上傳"),
                             onPressed: (){
-                              Firestore.instance.collection("DrugBank").document(document.documentID).updateData(
+                              DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
+                                  .collection("number")
+                                  .document(resultPeriod.text);
+                              dr.get().then((datasnapshot){
+                                final fin = (double.parse(datasnapshot.data["數量"]) + double.parse(resultNumber.text.toString())).toString();
+                                Firestore.instance.collection("DrugBank").document(document.documentID)
+                                    .collection("number")
+                                    .document(resultPeriod.text)
+                                    .updateData(
+                                  {"數量":fin,
+                                    "發票條碼":resultReceipt.text,
+                                    "效期":resultPeriod.text,
+                                    "批號":resultLotNumber.text,
+                                  },
+                                );
+                              });
+                            }),
+                        RaisedButton(
+                            child: Text("確認上傳2"),
+                            onPressed: (){
+                              Firestore.instance.collection("DrugBank").document(document.documentID)
+                                  .collection("number")
+                                  .document()
+                                  .setData(
                                 {"數量":resultNumber.text,
                                   "發票條碼":resultReceipt.text,
                                   "效期":resultPeriod.text,
                                   "批號":resultLotNumber.text,
                                 },
                               );
+                            }),
+                        RaisedButton(
+                            child: Text("返回主畫面"),
+                            onPressed: (){
                               Navigator.push(
                                 context,
                                 new MaterialPageRoute(builder: (context) => DrugBank()),
                               );
                             }),
-                        RaisedButton(
-                            child: Text("掃描"),
-                            onPressed: (){}),
                       ],),
-                      //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                     );
                 }).toList(),
               );
-            }
-        ),
-
-          TextField(
-            controller: resultNumber,
-            onEditingComplete: (){
-              print(resultNumber.text);
-            },
-            decoration: InputDecoration(
-              icon: Icon(Icons.desktop_windows),
-              labelText: "輸入數量",
-              suffix: IconButton(icon: Icon(Icons.close), onPressed:() {
-                FocusScope.of(context).requestFocus(new FocusNode());
-              }
-              ),
-            ),
-          ),
-          TextField(
-            controller: resultReceipt,
-            onEditingComplete: (){
-              print(resultReceipt.text);
-            },
-            decoration: InputDecoration(
-              icon: Icon(Icons.desktop_windows),
-              labelText: "發票號碼",
-              suffix: IconButton(icon: Icon(Icons.close), onPressed:() {
-                FocusScope.of(context).requestFocus(new FocusNode());
-              }
-              ),
-            ),
-          ),
-          TextField(
-            controller: resultLotNumber,
-            onEditingComplete: (){
-              print(resultLotNumber.text);
-            },
-            decoration: InputDecoration(
-              icon: Icon(Icons.desktop_windows),
-              labelText: "批號",
-              suffix: IconButton(icon: Icon(Icons.close), onPressed:() {
-                FocusScope.of(context).requestFocus(new FocusNode());
-              }
-              ),
-            ),
-          ),
-          TextField(
-            controller: resultPeriod,
-            onEditingComplete: (){
-              print(resultPeriod.text);
-            },
-            decoration: InputDecoration(
-              icon: Icon(Icons.desktop_windows),
-              labelText: "效期",
-              suffix: IconButton(icon: Icon(Icons.close), onPressed:() {
-                FocusScope.of(context).requestFocus(new FocusNode());
-              }
-              ),
-            ),
-          ),
-
-          ],),
-        ),
+            }),
       ),
     );
   }
