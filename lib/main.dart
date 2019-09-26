@@ -155,7 +155,12 @@ class MainPageState extends State<MainPage>{
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
                     icon: Icon(Icons.desktop_windows,size: 100.0,),
-                    onPressed: (){},
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        new MaterialPageRoute(builder: (context) => new DrugBankOut()),
+                      );
+                    },
                     highlightColor: Colors.blue,
                   ),
                 ),
@@ -169,7 +174,7 @@ class MainPageState extends State<MainPage>{
                     onPressed: (){
                       Navigator.push(
                         context,
-                        new MaterialPageRoute(builder: (context) => new DrugBankOut()),
+                        new MaterialPageRoute(builder: (context) => new DrugBankDrugTake()),
                       );
                     },
                     highlightColor: Colors.blue,
@@ -186,7 +191,12 @@ class MainPageState extends State<MainPage>{
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
                     icon: Icon(Icons.calendar_today,size: 100.0,),
-                    onPressed: (){},
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        new MaterialPageRoute(builder: (context) => new DrugBankDrugReturn()),
+                      );
+                    },
                   ),
                 ),
                 Container(
@@ -196,7 +206,12 @@ class MainPageState extends State<MainPage>{
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
                     icon: Icon(Icons.account_box,size: 100.0,),
-                    onPressed: (){},
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        new MaterialPageRoute(builder: (context) => new DrugBankPicTest()),
+                      );
+                    },
                     highlightColor: Colors.blue,
                   ),
                 ),
@@ -276,7 +291,7 @@ class DrugBankState extends State<DrugBank>{                                    
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text("進貨藥庫資訊"),),
+      appBar: AppBar(title: Text("廠商進庫資訊"),),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
 
@@ -288,11 +303,19 @@ class DrugBankState extends State<DrugBank>{                                    
                     shrinkWrap: true,
                     scrollDirection: Axis.vertical,
                     children: snapshot.data.documents.map((DocumentSnapshot document){
-                      return
-                          ListTile(
-                            title: Center(child:Text(document["中文"],style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold),),),
-                            subtitle:
-                            Column(children: <Widget>[
+                      var img = document["系統代碼"];
+                    var imgage = "assets/images/$img.jpg";
+                    return
+                      ListTile(
+                        title: null,
+                        subtitle:
+                        Column(children: <Widget>[
+                          Image.asset(
+                            imgage,
+                            width: 250.0,
+                            height: 250.0,
+                          ),
+                          Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                               Text.rich(
                                 TextSpan(
                                   children:[
@@ -331,7 +354,7 @@ class DrugBankState extends State<DrugBank>{                                    
                                       style: TextStyle(fontSize: 20.0,color: Colors.black),
                                     ),
                                     TextSpan(
-                                      text: document["藥名"],
+                                      text: document.documentID,
                                       style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                                     ),
                                   ],
@@ -352,6 +375,21 @@ class DrugBankState extends State<DrugBank>{                                    
                                   ],
                                 ),
                               ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保碼:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保碼"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
 
                               Text.rich(
                                 TextSpan(
@@ -486,23 +524,30 @@ class _DrugBankEditState extends State<DrugBankEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Text("上傳"),),
+        appBar: AppBar(title: Text("廠商進庫資訊上傳"),),
         body:
           //Text("${widget.value}"),
           StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: widget.value).snapshots(),
             builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
-
               if(!snapshot.hasData) return Text("loading...");
               return ListView(
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
                 children: snapshot.data.documents.map((DocumentSnapshot document){
+                  var img = document["系統代碼"];
+                  var imgage = "assets/images/$img.jpg";
                   return
                     ListTile(
-                      title: Center(child:Text(document["中文"],style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold),),),
+                      title: null,
                       subtitle:
                       Column(children: <Widget>[
+                        Image.asset(
+                          imgage,
+                          width: 250.0,
+                          height: 250.0,
+                                   ),
+                        Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                         Text.rich(
                           TextSpan(
                             children:[
@@ -541,7 +586,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
-                                text: document["藥名"],
+                                text: document.documentID,
                                 style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                               ),
                             ],
@@ -557,6 +602,21 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                               ),
                               TextSpan(
                                 text: document["健保價"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保碼"],
                                 style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                               ),
                             ],
@@ -740,32 +800,12 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             child: Text("掃描"),
                             onPressed: (){}
                             ),
-                        RaisedButton(                                           ///上傳1，上傳1是先前討論的上傳形式，以效期當作文件名稱，在入庫時每次上傳都會在相同效期的文件內增加藥品數量
-                            child: Text("確認上傳"),
-                            onPressed: (){
-                              DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("number")
-                                  .document(resultPeriod.text);
-                              dr.get().then((datasnapshot){
-                                final fin = (double.parse(datasnapshot.data["數量"]) + double.parse(resultNumber.text.toString())).toString();  ///此處先讀取資料庫藥品數量在與輸入數量相加
-                                Firestore.instance.collection("DrugBank").document(document.documentID)
-                                    .collection("number")
-                                    .document(resultPeriod.text)
-                                    .updateData(                                ///上傳運算後以及輸入框內的資料並完成入庫
-                                  {"數量":fin,
-                                    "發票條碼":resultReceipt.text,
-                                    "效期":resultPeriod.text,
-                                    "批號":resultLotNumber.text,
-                                  },
-                                );
-                              });
-                            }),
                         RaisedButton(
-                            child: Text("確認上傳2"),                           ///上傳2，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
+                            child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
                               Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("number")
-                                  .document()
+                                  .collection("LotNumber")
+                                  .document(resultLotNumber.text)
                                   .setData(
                                 {"數量":resultNumber.text,
                                   "發票條碼":resultReceipt.text,
@@ -802,7 +842,7 @@ class _DrugBankOutState extends State<DrugBankOut> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("退庫藥庫資訊"),),
+      appBar: AppBar(title: Text("廠商退庫資訊"),),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
 
@@ -814,11 +854,19 @@ class _DrugBankOutState extends State<DrugBankOut> {
                   shrinkWrap: true,
                   scrollDirection: Axis.vertical,
                   children: snapshot.data.documents.map((DocumentSnapshot document){
-                    return
-                      ListTile(
-                        title: Center(child:Text(document["中文"],style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold),),),
-                        subtitle:
-                        Column(children: <Widget>[
+                    var img = document["系統代碼"];
+                  var imgage = "assets/images/$img.jpg";
+                  return
+                    ListTile(
+                      title: null,
+                      subtitle:
+                       Column(children: <Widget>[
+                        Image.asset(
+                          imgage,
+                          width: 250.0,
+                          height: 250.0,
+                                   ),
+                        Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                           Text.rich(
                             TextSpan(
                               children:[
@@ -878,6 +926,21 @@ class _DrugBankOutState extends State<DrugBankOut> {
                               ],
                             ),
                           ),
+
+                         Text.rich(
+                           TextSpan(
+                             children:[
+                               TextSpan(
+                                 text: "健保碼:",
+                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
+                               ),
+                               TextSpan(
+                                 text: document["健保碼"],
+                                 style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                               ),
+                             ],
+                           ),
+                         ),
 
                           Text.rich(
                             TextSpan(
@@ -1010,7 +1073,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Text("退庫"),),
+        appBar: AppBar(title: Text("廠商退庫資訊上傳"),),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -1018,15 +1081,24 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
             builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
 
               if(!snapshot.hasData) return Text("loading...");
+
               return ListView(
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
                 children: snapshot.data.documents.map((DocumentSnapshot document){
-                  return
-                    ListTile(
-                      title: Center(child:Text(document["中文"],style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold),),),
-                      subtitle:
+                  var img = document["系統代碼"];
+                var imgage = "assets/images/$img.jpg";
+                return
+                  ListTile(
+                    title: null,
+                    subtitle:
                       Column(children: <Widget>[
+                        Image.asset(
+                          imgage,
+                          width: 250.0,
+                          height: 250.0,
+                                  ),
+                      Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                         Text.rich(
                           TextSpan(
                             children:[
@@ -1081,6 +1153,21 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                               ),
                               TextSpan(
                                 text: document["健保價"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保碼"],
                                 style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                               ),
                             ],
@@ -1268,12 +1355,12 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             child: Text("確認退庫"),
                             onPressed: (){
                               DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("number")
-                                  .document(resultPeriod2.text);
+                                  .collection("LotNumber")
+                                  .document(resultLotNumber2.text);
                               dr.get().then((datasnapshot){
                                 final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(resultNumber2.text.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)
-                                    .collection("number")
+                                    .collection("LotNumber")
                                     .document(resultPeriod2.text)
                                     .updateData(                                ///上傳運算後以及輸入框內的資料並完成退庫動作
                                   {"數量":fin,
@@ -1302,3 +1389,1021 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   }
 }
 
+class DrugBankDrugTake extends StatefulWidget {
+  @override
+  _DrugBankDrugTakeState createState() => _DrugBankDrugTakeState();
+}
+
+class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
+  TextEditingController resultInfoDrugTake = new TextEditingController(text:"");
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("客戶領藥資訊"),),
+      body: SingleChildScrollView(
+        child: Column(children: <Widget>[
+
+          StreamBuilder<QuerySnapshot>(
+              stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: resultInfoDrugTake.text).snapshots(),
+              builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+                if(!snapshot.hasData) return Text("loading...");
+                return ListView(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  children: snapshot.data.documents.map((DocumentSnapshot document){
+                    var img = document["系統代碼"];
+                    var imgage = "assets/images/$img.jpg";
+                    return
+                      ListTile(
+                        title: null,
+                        subtitle:
+                        Column(children: <Widget>[
+                          Image.asset(
+                            imgage,
+                            width: 250.0,
+                            height: 250.0,
+                          ),
+                          Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "類型:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["類型"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "107項次:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["107項次"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "藥名:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document.documentID,
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保價:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保價"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保碼:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保碼"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保單位:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保單位"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "廠商:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["廠商"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "成份:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["成份"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "系統代碼:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["系統代碼"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],),
+                        //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
+                      );
+                  }).toList(),
+                );
+              }
+          ),
+          TextField(
+            controller: resultInfoDrugTake,
+            onEditingComplete: (){
+              print(resultInfoDrugTake.text);
+            },
+            decoration: InputDecoration(
+                icon: Icon(Icons.desktop_windows),
+                labelText: "輸入條碼",
+                suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                  FocusScope.of(context).requestFocus(new FocusNode());
+                }
+                ),
+                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){})
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                child: Text("讀取"),
+                onPressed: (){
+                  var route = new MaterialPageRoute(
+                    builder:(BuildContext context) => DrugBankDrugTakeEdit(value:resultInfoDrugTake.text), ///將資料傳遞到下一個畫面
+                  );
+                  Navigator.of(context).push(route);                                       ///切換到下個畫面
+                },
+              ),
+              RaisedButton(
+                child: Text("返回主頁面"),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => MainPage()),
+                  );
+                },
+              ),
+              RaisedButton(
+                child: Text("讀取"),
+                onPressed: (){
+                },
+              ),
+            ],),
+        ],
+        ),
+      ),
+    );
+  }
+}
+
+class DrugBankDrugTakeEdit extends StatefulWidget {                                       ///病人領藥畫面2
+  DrugBankDrugTakeEdit({Key key, this.value}):super(key:key);
+  String value;
+  @override
+  _DrugBankDrugTakeEditState createState() => _DrugBankDrugTakeEditState();
+}
+
+class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
+
+  TextEditingController resultNumber3 = TextEditingController(text:"");   //數量輸入框資料
+  TextEditingController resultReceipt3 = TextEditingController(text:"");  //發票號碼輸入框資料
+  TextEditingController resultPeriod3 = TextEditingController(text:"");   //效期輸入框資料
+  TextEditingController resultLotNumber3 = TextEditingController(text:"");//批號輸入框資料
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Scaffold(
+        appBar: AppBar(title: Text("客戶領藥資訊上傳"),),
+        body:
+        //Text("${widget.value}"),
+        StreamBuilder<QuerySnapshot>(
+            stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: widget.value).snapshots(),
+            builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+
+              if(!snapshot.hasData) return Text("loading...");
+              return ListView(
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                children: snapshot.data.documents.map((DocumentSnapshot document){
+                  var img = document["系統代碼"];
+                  var imgage = "assets/images/$img.jpg";
+                  return
+                    ListTile(
+                      title: null,
+                      subtitle:
+                      Column(children: <Widget>[
+                        Image.asset(
+                          imgage,
+                          width: 250.0,
+                          height: 250.0,
+                        ),
+                        Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "類型:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["類型"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "107項次:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["107項次"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "藥名:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document.documentID,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保價:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保價"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保碼"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保單位:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保單位"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "廠商:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["廠商"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "成份:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["成份"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "系統代碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["系統代碼"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "數量:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: resultNumber3.text,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "批號:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: resultLotNumber3.text,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextField(
+                          controller: resultNumber3,
+                          onEditingComplete: (){
+                            print(resultNumber3.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "輸入數量",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                          ),
+                        ),
+
+                        TextField(
+                          controller: resultLotNumber3,
+                          onEditingComplete: (){
+                            print(resultLotNumber3.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "批號",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                            suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                          ),
+                        ),
+
+                        RaisedButton(
+                            child: Text("掃描"),
+                            onPressed: (){}
+                        ),
+                        RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
+                            child: Text("確認退庫"),
+                            onPressed: (){
+                              DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
+                                  .collection("LotNumber")
+                                  .document(resultLotNumber3.text);
+                              dr.get().then((datasnapshot){
+                                final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(resultNumber3.text.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
+                                Firestore.instance.collection("DrugBank").document(document.documentID)
+                                    .collection("LotNumber")
+                                    .document(resultPeriod3.text)
+                                    .updateData(                                ///上傳運算後以及輸入框內的資料並完成退庫動作
+                                  {"數量":fin,
+                                    "發票條碼":resultReceipt3.text,
+                                    "效期":resultPeriod3.text,
+                                    "批號":resultLotNumber3.text,
+                                  },
+                                );
+                              });
+                            }),
+                        RaisedButton(
+                            child: Text("返回主畫面"),
+                            onPressed: (){
+                              Navigator.push(
+                                context,
+                                new MaterialPageRoute(builder: (context) => DrugBank()),
+                              );
+                            }),
+                      ],),
+                    );
+                }).toList(),
+              );
+            }),
+      ),
+    );
+  }
+}
+
+
+class DrugBankDrugReturn extends StatefulWidget {
+  @override
+  _DrugBankDrugReturnState createState() => _DrugBankDrugReturnState();
+}
+
+class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
+  TextEditingController resultInfoDrugReturn = new TextEditingController(text:"");
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("客戶退藥資訊"),),
+      body: SingleChildScrollView(
+        child: Column(children: <Widget>[
+
+          StreamBuilder<QuerySnapshot>(
+              stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: resultInfoDrugReturn.text).snapshots(),
+              builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+                if(!snapshot.hasData) return Text("loading...");
+                return ListView(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  children: snapshot.data.documents.map((DocumentSnapshot document){
+                    var img = document["系統代碼"];
+                    var imgage = "assets/images/$img.jpg";
+                    return
+                      ListTile(
+                        title: null,
+                        subtitle:
+                        Column(children: <Widget>[
+                          Image.asset(
+                            imgage,
+                            width: 250.0,
+                            height: 250.0,
+                          ),
+                          Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "類型:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["類型"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "107項次:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["107項次"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "藥名:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document.documentID,
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保價:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保價"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保碼:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保碼"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "健保單位:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["健保單位"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "廠商:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["廠商"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "成份:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["成份"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "系統代碼:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: document["系統代碼"],
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],),
+                        //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
+                      );
+                  }).toList(),
+                );
+              }
+          ),
+          TextField(
+            controller: resultInfoDrugReturn,
+            onEditingComplete: (){
+              print(resultInfoDrugReturn.text);
+            },
+            decoration: InputDecoration(
+                icon: Icon(Icons.desktop_windows),
+                labelText: "輸入條碼",
+                suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                  FocusScope.of(context).requestFocus(new FocusNode());
+                }
+                ),
+                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){})
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                child: Text("讀取"),
+                onPressed: (){
+                  var route = new MaterialPageRoute(
+                    builder:(BuildContext context) => DrugBankDrugReturnEdit(value:resultInfoDrugReturn.text), ///將資料傳遞到下一個畫面
+                  );
+                  Navigator.of(context).push(route);                                       ///切換到下個畫面
+                },
+              ),
+              RaisedButton(
+                child: Text("返回主頁面"),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => MainPage()),
+                  );
+                },
+              ),
+              RaisedButton(
+                child: Text("讀取"),
+                onPressed: (){
+                },
+              ),
+            ],),
+        ],
+        ),
+      ),
+    );
+  }
+}
+
+class DrugBankDrugReturnEdit extends StatefulWidget {                                       ///病人退藥畫面2
+  DrugBankDrugReturnEdit({Key key, this.value}):super(key:key);
+  String value;
+  @override
+  _DrugBankDrugReturnEditState createState() => _DrugBankDrugReturnEditState();
+}
+
+class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
+
+  TextEditingController resultNumber4 = TextEditingController(text:"");   //數量輸入框資料
+  TextEditingController resultReceipt4 = TextEditingController(text:"");  //發票號碼輸入框資料
+  TextEditingController resultPeriod4 = TextEditingController(text:"");   //效期輸入框資料
+  TextEditingController resultLotNumber4 = TextEditingController(text:"");//批號輸入框資料
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Scaffold(
+        appBar: AppBar(title: Text("客戶退藥資訊上傳"),),
+        body:
+        //Text("${widget.value}"),
+        StreamBuilder<QuerySnapshot>(
+            stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: widget.value).snapshots(),
+            builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+
+              if(!snapshot.hasData) return Text("loading...");
+              return ListView(
+                shrinkWrap: true,
+                scrollDirection: Axis.vertical,
+                children: snapshot.data.documents.map((DocumentSnapshot document){
+                  var img = document["系統代碼"];
+                  var imgage = "assets/images/$img.jpg";
+                  return
+                    ListTile(
+                      title: null,
+                      subtitle:
+                      Column(children: <Widget>[
+                        Image.asset(
+                          imgage,
+                          width: 250.0,
+                          height: 250.0,
+                        ),
+                        Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "類型:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["類型"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "107項次:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["107項次"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "藥名:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document.documentID,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保價:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保價"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保碼"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "健保單位:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保單位"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "廠商:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["廠商"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "成份:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["成份"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "系統代碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["系統代碼"],
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "數量:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: resultNumber4.text,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "批號:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: resultLotNumber4.text,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextField(
+                          controller: resultNumber4,
+                          onEditingComplete: (){
+                            print(resultNumber4.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "輸入數量",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                          ),
+                        ),
+
+                        TextField(
+                          controller: resultLotNumber4,
+                          onEditingComplete: (){
+                            print(resultLotNumber4.text);
+                          },
+                          decoration: InputDecoration(
+                            icon: Icon(Icons.desktop_windows),
+                            labelText: "批號",
+                            suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              FocusScope.of(context).requestFocus(new FocusNode());
+                            }
+                            ),
+                            suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                          ),
+                        ),
+
+                        RaisedButton(
+                            child: Text("掃描"),
+                            onPressed: (){}
+                        ),
+                        RaisedButton(
+                            child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
+                            onPressed: (){
+                              Firestore.instance.collection("DrugBank").document(document.documentID)
+                                  .collection("LotNumber")
+                                  .document(resultLotNumber4.text)
+                                  .setData(
+                                {"數量":resultNumber4.text,
+                                  "批號":resultLotNumber4.text,
+                                },
+                              );
+                            }),
+                        RaisedButton(
+                            child: Text("返回主畫面"),
+                            onPressed: (){
+                              Navigator.push(
+                                context,
+                                new MaterialPageRoute(builder: (context) => DrugBank()),
+                              );
+                            }),
+                      ],),
+                    );
+                }).toList(),
+              );
+            }),
+      ),
+    );
+  }
+}
+
+class DrugBankPicTest extends StatefulWidget {
+  @override
+  _DrugBankPicTestState createState() => _DrugBankPicTestState();
+}
+
+class _DrugBankPicTestState extends State<DrugBankPicTest> {
+  var img = "assets/images/123.jpg";
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Scaffold(
+        appBar: AppBar(title: Text("Test"),),
+        body: new Image.asset(
+          img,
+          width: 500.0,
+          height: 500.0,
+       ),
+      ),
+    );
+  }
+}
