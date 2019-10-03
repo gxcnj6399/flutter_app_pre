@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -2036,12 +2035,9 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                                 final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(resultNumber3.text.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)
                                     .collection("LotNumber")
-                                    .document(resultPeriod3.text)
+                                    .document(resultLotNumber3.text)
                                     .updateData(                                ///上傳運算後以及輸入框內的資料並完成退庫動作
                                   {"數量":fin,
-                                    "發票條碼":resultReceipt3.text,
-                                    "效期":resultPeriod3.text,
-                                    "批號":resultLotNumber3.text,
                                   },
                                 );
                               });
@@ -2592,14 +2588,19 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                         RaisedButton(
                             child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
-                              Firestore.instance.collection("DrugBank").document(document.documentID)
+                              DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
                                   .collection("LotNumber")
-                                  .document(resultLotNumber4.text)
-                                  .setData(
-                                {"數量":resultNumber4.text,
-                                  "批號":resultLotNumber4.text,
-                                },
-                              );
+                                  .document(resultLotNumber4.text);
+                              dr.get().then((datasnapshot){
+                                final fin = (double.parse(datasnapshot.data["數量"]) + double.parse(resultNumber4.text.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
+                                Firestore.instance.collection("DrugBank").document(document.documentID)
+                                    .collection("LotNumber")
+                                    .document(resultLotNumber4.text)
+                                    .updateData(                                ///上傳運算後以及輸入框內的資料並完成退庫動作
+                                  {"數量":fin,
+                                  },
+                                );
+                              });
                             }),
                         RaisedButton(
                             child: Text("返回主畫面"),
