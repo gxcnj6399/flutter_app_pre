@@ -24,7 +24,6 @@ class MyHomePage extends StatefulWidget{
 
 class MyHomePageState extends State<MyHomePage>{
 
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -281,12 +280,7 @@ class DrugBank extends StatefulWidget{                                          
 
 class DrugBankState extends State<DrugBank>{                                      ///進庫
   TextEditingController resultInfo = new TextEditingController(text:"");
-  //Future getdata2()  {
-  //  final ref = FirebaseStorage.instance.ref().child('123');
-  //  var url =   ref.getDownloadURL();
-  //  print(url);
-  //}
-
+  double total = 0;
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -304,7 +298,22 @@ class DrugBankState extends State<DrugBank>{                                    
                     scrollDirection: Axis.vertical,
                     children: snapshot.data.documents.map((DocumentSnapshot document){
                       var img = document["系統代碼"];
-                    var imgage = "assets/images/$img.jpg";
+                      var imgage = "assets/images/$img.jpg";
+                      void queryValues() {
+                        Firestore.instance
+                            .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                            .snapshots()
+                            .listen((snapshot) {
+                          double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                          setState(() {total = tempTotal;});
+                        });
+                      }
+                      @override
+                      initState() {
+                        super.initState();
+                        queryValues();
+                      }
+                      queryValues();
                     return
                       ListTile(
                         title: null,
@@ -450,6 +459,20 @@ class DrugBankState extends State<DrugBank>{                                    
                                   ],
                                 ),
                               ),
+                             Text.rich(
+                                TextSpan(
+                                  children:[
+                                    TextSpan(
+                                      text: "藥庫總數量:",
+                                      style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                    ),
+                                    TextSpan(
+                                      text: total.toString(),
+                                      style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],),
                             //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                           );
@@ -519,8 +542,9 @@ class _DrugBankEditState extends State<DrugBankEdit> {
   TextEditingController resultReceipt = TextEditingController(text:"");  //發票號碼輸入框資料
   TextEditingController resultPeriod = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber = TextEditingController(text:"");//批號輸入框資料
-
+  double total = 0;
   @override
+
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
@@ -537,6 +561,21 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                 children: snapshot.data.documents.map((DocumentSnapshot document){
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
+                  void queryValues() {
+                    Firestore.instance
+                        .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                        .snapshots()
+                        .listen((snapshot) {
+                      double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                      setState(() {total = tempTotal;});
+                    });
+                  }
+                  @override
+                  initState() {
+                    super.initState();
+                    queryValues();
+                  }
+                  queryValues();
                   return
                     ListTile(
                       title: null,
@@ -737,6 +776,20 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             ],
                           ),
                         ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "藥庫總數量:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: total.toString(),
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
                         TextField(
                           controller: resultNumber,
                           onEditingComplete: (){
@@ -839,6 +892,7 @@ class DrugBankOut extends StatefulWidget {
 
 class _DrugBankOutState extends State<DrugBankOut> {
   TextEditingController resultInfo2 = new TextEditingController(text:"");
+  double total = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -855,7 +909,22 @@ class _DrugBankOutState extends State<DrugBankOut> {
                   scrollDirection: Axis.vertical,
                   children: snapshot.data.documents.map((DocumentSnapshot document){
                     var img = document["系統代碼"];
-                  var imgage = "assets/images/$img.jpg";
+                    var imgage = "assets/images/$img.jpg";
+                    void queryValues() {
+                      Firestore.instance
+                          .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                          .snapshots()
+                          .listen((snapshot) {
+                        double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                        setState(() {total = tempTotal;});
+                      });
+                    }
+                    @override
+                    initState() {
+                      super.initState();
+                      queryValues();
+                    }
+                    queryValues();
                   return
                     ListTile(
                       title: null,
@@ -1001,6 +1070,20 @@ class _DrugBankOutState extends State<DrugBankOut> {
                               ],
                             ),
                           ),
+                            Text.rich(
+                              TextSpan(
+                                children:[
+                                  TextSpan(
+                                    text: "藥庫總數量:",
+                                    style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                  ),
+                                  TextSpan(
+                                    text: total.toString(),
+                                    style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                  ),
+                                ],
+                              ),
+                            ),
                         ],),
                         //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                       );
@@ -1069,6 +1152,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   TextEditingController resultReceipt2 = TextEditingController(text:"");  //發票號碼輸入框資料
   TextEditingController resultPeriod2 = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber2 = TextEditingController(text:"");
+  double total = 0;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1087,7 +1171,22 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                 scrollDirection: Axis.vertical,
                 children: snapshot.data.documents.map((DocumentSnapshot document){
                   var img = document["系統代碼"];
-                var imgage = "assets/images/$img.jpg";
+                  var imgage = "assets/images/$img.jpg";
+                  void queryValues() {
+                    Firestore.instance
+                        .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                        .snapshots()
+                        .listen((snapshot) {
+                      double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                      setState(() {total = tempTotal;});
+                    });
+                  }
+                  @override
+                  initState() {
+                    super.initState();
+                    queryValues();
+                  }
+                  queryValues();
                 return
                   ListTile(
                     title: null,
@@ -1288,6 +1387,20 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             ],
                           ),
                         ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "藥庫總數量:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: total.toString(),
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
                         TextField(
                           controller: resultNumber2,
                           onEditingComplete: (){
@@ -1396,6 +1509,7 @@ class DrugBankDrugTake extends StatefulWidget {
 
 class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
   TextEditingController resultInfoDrugTake = new TextEditingController(text:"");
+  double total = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1413,6 +1527,21 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                   children: snapshot.data.documents.map((DocumentSnapshot document){
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
+                    void queryValues() {
+                      Firestore.instance
+                          .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                          .snapshots()
+                          .listen((snapshot) {
+                        double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                        setState(() {total = tempTotal;});
+                      });
+                    }
+                    @override
+                    initState() {
+                      super.initState();
+                      queryValues();
+                    }
+                    queryValues();
                     return
                       ListTile(
                         title: null,
@@ -1558,6 +1687,20 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                               ],
                             ),
                           ),
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "藥庫總數量:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: total.toString(),
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],),
                         //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                       );
@@ -1627,6 +1770,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
   TextEditingController resultReceipt3 = TextEditingController(text:"");  //發票號碼輸入框資料
   TextEditingController resultPeriod3 = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber3 = TextEditingController(text:"");//批號輸入框資料
+  double total = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -1646,6 +1790,21 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                 children: snapshot.data.documents.map((DocumentSnapshot document){
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
+                  void queryValues() {
+                    Firestore.instance
+                        .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                        .snapshots()
+                        .listen((snapshot) {
+                      double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                      setState(() {total = tempTotal;});
+                    });
+                  }
+                  @override
+                  initState() {
+                    super.initState();
+                    queryValues();
+                  }
+                  queryValues();
                   return
                     ListTile(
                       title: null,
@@ -1818,6 +1977,20 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                             ],
                           ),
                         ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "藥庫總數量:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: total.toString(),
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
                         TextField(
                           controller: resultNumber3,
                           onEditingComplete: (){
@@ -1899,6 +2072,7 @@ class DrugBankDrugReturn extends StatefulWidget {
 
 class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
   TextEditingController resultInfoDrugReturn = new TextEditingController(text:"");
+  double total = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1916,6 +2090,21 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                   children: snapshot.data.documents.map((DocumentSnapshot document){
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
+                    void queryValues() {
+                      Firestore.instance
+                          .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                          .snapshots()
+                          .listen((snapshot) {
+                        double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                        setState(() {total = tempTotal;});
+                      });
+                    }
+                    @override
+                    initState() {
+                      super.initState();
+                      queryValues();
+                    }
+                    queryValues();
                     return
                       ListTile(
                         title: null,
@@ -2061,6 +2250,20 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                               ],
                             ),
                           ),
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "藥庫總數量:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: total.toString(),
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],),
                         //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                       );
@@ -2130,6 +2333,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
   TextEditingController resultReceipt4 = TextEditingController(text:"");  //發票號碼輸入框資料
   TextEditingController resultPeriod4 = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber4 = TextEditingController(text:"");//批號輸入框資料
+  double total = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -2149,6 +2353,21 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                 children: snapshot.data.documents.map((DocumentSnapshot document){
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
+                  void queryValues() {
+                    Firestore.instance
+                        .collection('DrugBank').document(document.documentID).collection('LotNumber')
+                        .snapshots()
+                        .listen((snapshot) {
+                      double tempTotal = snapshot.documents.fold(0, (tot, doc) => tot + double.parse(doc.data['數量']));
+                      setState(() {total = tempTotal;});
+                    });
+                  }
+                  @override
+                  initState() {
+                    super.initState();
+                    queryValues();
+                  }
+                  queryValues();
                   return
                     ListTile(
                       title: null,
@@ -2321,6 +2540,20 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                             ],
                           ),
                         ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "藥庫總數量:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: total.toString(),
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
                         TextField(
                           controller: resultNumber4,
                           onEditingComplete: (){
@@ -2392,18 +2625,12 @@ class DrugBankPicTest extends StatefulWidget {
 }
 
 class _DrugBankPicTestState extends State<DrugBankPicTest> {
-  var img = "assets/images/123.jpg";
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Scaffold(
-        appBar: AppBar(title: Text("Test"),),
-        body: new Image.asset(
-          img,
-          width: 500.0,
-          height: 500.0,
-       ),
-      ),
+    return Scaffold(
+      body: Center(child: Text("Total:")),
     );
   }
 }
+
