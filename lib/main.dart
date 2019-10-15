@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:barcode_scan/barcode_scan.dart';
 void main() => runApp(MyApp());
+
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -20,6 +23,7 @@ class MyHomePage extends StatefulWidget{
     return MyHomePageState();
   }
 }
+
 
 class MyHomePageState extends State<MyHomePage>{
 
@@ -281,7 +285,15 @@ class DrugBankState extends State<DrugBank>{                                    
   TextEditingController resultInfo = new TextEditingController(text:"");
   double total = 0;
   @override
+  Future scan() async{
+    try{
+      String barcode = await BarcodeScanner.scan();
+      setState(() => this.resultInfo.text = barcode);
+    }on PlatformException catch(e){
+    }
+  }
   Widget build(BuildContext context) {
+
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(title: Text("廠商進庫資訊"),),
@@ -491,14 +503,14 @@ class DrugBankState extends State<DrugBank>{                                    
                   FocusScope.of(context).requestFocus(new FocusNode());
                 }
                 ),
-                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){})
+                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){scan();})
             ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               RaisedButton(
-                child: Text("讀取"),
+                child: Text("下一步"),
                 onPressed: (){
                   var route = new MaterialPageRoute(
                     builder:(BuildContext context) => DrugBankEdit(value:resultInfo.text), ///將資料傳遞到下一個畫面
@@ -513,11 +525,6 @@ class DrugBankState extends State<DrugBank>{                                    
                     context,
                     new MaterialPageRoute(builder: (context) => MainPage()),
                   );
-                },
-              ),
-              RaisedButton(
-                child: Text("讀取"),
-                onPressed: (){
                 },
               ),
             ],),
@@ -849,10 +856,6 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                           ),
                         ),
                         RaisedButton(
-                            child: Text("掃描"),
-                            onPressed: (){}
-                            ),
-                        RaisedButton(
                             child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
                               Firestore.instance.collection("DrugBank").document(document.documentID)
@@ -867,7 +870,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                               );
                             }),
                         RaisedButton(
-                            child: Text("返回主畫面"),
+                            child: Text("返回進庫"),
                             onPressed: (){
                               Navigator.push(
                                 context,
@@ -1109,7 +1112,7 @@ class _DrugBankOutState extends State<DrugBankOut> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               RaisedButton(
-                child: Text("讀取"),
+                child: Text("下一步"),
                 onPressed: (){
                   var route = new MaterialPageRoute(
                     builder:(BuildContext context) => DrugBankOutEdit(value2:resultInfo2.text), ///將資料傳遞到下一個畫面
@@ -1124,11 +1127,6 @@ class _DrugBankOutState extends State<DrugBankOut> {
                     context,
                     new MaterialPageRoute(builder: (context) => MainPage()),
                   );
-                },
-              ),
-              RaisedButton(
-                child: Text("讀取"),
-                onPressed: (){
                 },
               ),
             ],),
@@ -1459,10 +1457,6 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
                           ),
                         ),
-                        RaisedButton(
-                            child: Text("掃描"),
-                            onPressed: (){}
-                        ),
                         RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
                             child: Text("確認退庫"),
                             onPressed: (){
@@ -1484,7 +1478,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                               });
                             }),
                         RaisedButton(
-                            child: Text("返回主畫面"),
+                            child: Text("返回退庫"),
                             onPressed: (){
                               Navigator.push(
                                 context,
@@ -1726,7 +1720,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               RaisedButton(
-                child: Text("讀取"),
+                child: Text("下一步"),
                 onPressed: (){
                   var route = new MaterialPageRoute(
                     builder:(BuildContext context) => DrugBankDrugTakeEdit(value:resultInfoDrugTake.text), ///將資料傳遞到下一個畫面
@@ -1741,11 +1735,6 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                     context,
                     new MaterialPageRoute(builder: (context) => MainPage()),
                   );
-                },
-              ),
-              RaisedButton(
-                child: Text("讀取"),
-                onPressed: (){
                 },
               ),
             ],),
@@ -2021,12 +2010,8 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                           ),
                         ),
 
-                        RaisedButton(
-                            child: Text("掃描"),
-                            onPressed: (){}
-                        ),
                         RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
-                            child: Text("確認退庫"),
+                            child: Text("確認領藥"),
                             onPressed: (){
                               DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
                                   .collection("LotNumber")
@@ -2043,7 +2028,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                               });
                             }),
                         RaisedButton(
-                            child: Text("返回主畫面"),
+                            child: Text("返回領藥"),
                             onPressed: (){
                               Navigator.push(
                                 context,
@@ -2260,8 +2245,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                               ],
                             ),
                           ),
-                        ],),
-                        //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
+                        ],), //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                       );
                   }).toList(),
                 );
@@ -2286,7 +2270,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               RaisedButton(
-                child: Text("讀取"),
+                child: Text("下一步"),
                 onPressed: (){
                   var route = new MaterialPageRoute(
                     builder:(BuildContext context) => DrugBankDrugReturnEdit(value:resultInfoDrugReturn.text), ///將資料傳遞到下一個畫面
@@ -2301,11 +2285,6 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                     context,
                     new MaterialPageRoute(builder: (context) => MainPage()),
                   );
-                },
-              ),
-              RaisedButton(
-                child: Text("讀取"),
-                onPressed: (){
                 },
               ),
             ],),
@@ -2582,11 +2561,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                         ),
 
                         RaisedButton(
-                            child: Text("掃描"),
-                            onPressed: (){}
-                        ),
-                        RaisedButton(
-                            child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
+                            child: Text("確認退藥"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
                               DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
                                   .collection("LotNumber")
@@ -2603,7 +2578,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                               });
                             }),
                         RaisedButton(
-                            child: Text("返回主畫面"),
+                            child: Text("返回退藥"),
                             onPressed: (){
                               Navigator.push(
                                 context,
