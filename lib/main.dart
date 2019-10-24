@@ -1149,6 +1149,9 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   TextEditingController resultReceipt2 = TextEditingController(text:"");  //發票號碼輸入框資料
   TextEditingController resultPeriod2 = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber2 = TextEditingController(text:"");
+  String period = "";
+  String lotnumber = "";
+  String receipt = "";
   double total = 0;
   @override
   Widget build(BuildContext context) {
@@ -1167,6 +1170,9 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
                 children: snapshot.data.documents.map((DocumentSnapshot document){
+                  DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
+                      .collection("LotNumber")
+                      .document(resultLotNumber2.text);
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
                   void queryValues() {
@@ -1328,62 +1334,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             ],
                           ),
                         ),
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "數量:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: resultNumber2.text,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "發票條碼:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: resultReceipt2.text,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "效期:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: resultPeriod2.text,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "批號:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: resultLotNumber2.text,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
+
                         Text.rich(
                           TextSpan(
                             children:[
@@ -1436,6 +1387,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             icon: Icon(Icons.desktop_windows),
                             labelText: "批號",
                             suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              dr.get().then((datasnapshot){
+                                period = datasnapshot.data["效期"];
+                                lotnumber = datasnapshot.data["批號"];
+                                receipt = datasnapshot.data["發票條碼"];
+                              });
                               FocusScope.of(context).requestFocus(new FocusNode());
                             }
                             ),
@@ -1457,12 +1413,51 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
                           ),
                         ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "入庫時發票條碼:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: receipt,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "入庫時效期:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: period,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "入庫時批號:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: lotnumber,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
                         RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
                             child: Text("確認退庫"),
                             onPressed: (){
-                              DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("LotNumber")
-                                  .document(resultLotNumber2.text);
                               dr.get().then((datasnapshot){
                                 final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(resultNumber2.text.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)
@@ -2303,11 +2298,13 @@ class DrugBankDrugReturnEdit extends StatefulWidget {                           
 }
 
 class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
-
   TextEditingController resultNumber4 = TextEditingController(text:"");   //數量輸入框資料
   TextEditingController resultReceipt4 = TextEditingController(text:"");  //發票號碼輸入框資料
   TextEditingController resultPeriod4 = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber4 = TextEditingController(text:"");//批號輸入框資料
+  String period = "";
+  String lotnumber = "";
+  String receipt = "";
   double total = 0;
 
   @override
@@ -2320,12 +2317,14 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
         StreamBuilder<QuerySnapshot>(
             stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: widget.value).snapshots(),
             builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
-
               if(!snapshot.hasData) return Text("loading...");
               return ListView(
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
                 children: snapshot.data.documents.map((DocumentSnapshot document){
+                  DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
+                      .collection("LotNumber")
+                      .document(resultLotNumber4.text);
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
                   void queryValues() {
@@ -2491,34 +2490,6 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "數量:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: resultNumber4.text,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "批號:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: resultLotNumber4.text,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
                                 text: "藥庫總數量:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
@@ -2553,19 +2524,48 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                             icon: Icon(Icons.desktop_windows),
                             labelText: "批號",
                             suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                              dr.get().then((datasnapshot){
+                                period = datasnapshot.data["效期"];
+                                lotnumber = datasnapshot.data["批號"];
+                                receipt = datasnapshot.data["發票條碼"];
+                              });
                               FocusScope.of(context).requestFocus(new FocusNode());
                             }
                             ),
                             suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
                           ),
                         ),
-
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "入庫時效期:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: period,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "入庫時批號:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: lotnumber,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
                         RaisedButton(
                             child: Text("確認退藥"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
-                              DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("LotNumber")
-                                  .document(resultLotNumber4.text);
                               dr.get().then((datasnapshot){
                                 final fin = (double.parse(datasnapshot.data["數量"]) + double.parse(resultNumber4.text.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)
