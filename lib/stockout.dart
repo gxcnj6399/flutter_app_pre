@@ -3,6 +3,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
+import 'package:intl/intl.dart';
 class DrugBankOut extends StatefulWidget{                                            ///進庫
   @override
   State<StatefulWidget> createState() {
@@ -32,7 +33,7 @@ class _DrugBankOutState extends State<DrugBankOut>{                             
 
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text("退庫資訊"),),
+      appBar: AppBar(title: Center(child:Text("退庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
           TextField(
@@ -225,6 +226,18 @@ class _DrugBankOutState extends State<DrugBankOut>{                             
                 );
               }
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                child: Text("清除資料"),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => DrugBankOut()),
+                  );
+                },
+              ),
               RaisedButton(
                 child: Text("返回主頁面"),
                 onPressed: (){
@@ -234,6 +247,7 @@ class _DrugBankOutState extends State<DrugBankOut>{                             
                   );
                 },
               ),
+            ],),
         ],
         ),
       ),
@@ -254,12 +268,13 @@ class DrugBankOutEdit extends StatefulWidget {                                  
 }
 
 class _DrugBankOutEditState extends State<DrugBankOutEdit> {
+  DateTime now = DateTime.now();
   double total = 0;
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Text("退庫資訊上傳"),),
+        appBar: AppBar(title: Center(child:Text("退庫資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -275,6 +290,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                       .document(widget.LotNumber);
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
+                  String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
                   void queryValues() {
                     Firestore.instance
                         .collection('DrugBank').document(document.documentID).collection('LotNumber')
@@ -494,6 +510,18 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                                     .updateData(                                ///上傳運算後以及輸入框內的資料並完成退庫動作
                                   {"數量":fin,
                                   },
+                                );
+                                Firestore.instance.collection("DrugBank").document(document.documentID)
+                                    .collection("LotNumber")
+                                    .document(widget.LotNumber)
+                                    .collection("user")
+                                    .document(formattedDate)
+                                    .setData(
+                                    {"操作人員":"1233",
+                                      "時間": now,
+                                      "操作":"退庫",
+                                      "數量":widget.Number,
+                                    }
                                 );
                               });
                             }),

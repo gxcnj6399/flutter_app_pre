@@ -3,6 +3,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
+import 'package:intl/intl.dart';
 class DrugBank extends StatefulWidget{                                            ///進庫
   @override
   State<StatefulWidget> createState() {
@@ -31,7 +32,7 @@ class DrugBankState extends State<DrugBank>{                                    
 
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text("進庫資訊"),),
+      appBar: AppBar(title: Center(child:Text("進庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
           TextField(
@@ -220,6 +221,21 @@ class DrugBankState extends State<DrugBank>{                                    
                               ),
                             ),
                           ),
+                          RaisedButton(
+                            child: Text("下一步"),
+                            onPressed: (){
+                              var route = new MaterialPageRoute(
+                                builder:(BuildContext context) => DrugBankEdit(
+                                  value: resultInfo.text,
+                                  Number: resultNumber.text,
+                                  LotNumber: resultLotNumber.text,
+                                  Period: resultPeriod.text,
+                                  Receipt: resultReceipt.text,
+                                ), ///將資料傳遞到下一個畫面
+                              );
+                              Navigator.of(context).push(route);                                       ///切換到下個畫面
+                            },
+                          ),
                         ],),
                         //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                       );
@@ -231,18 +247,12 @@ class DrugBankState extends State<DrugBank>{                                    
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               RaisedButton(
-                child: Text("下一步"),
+                child: Text("清除資料"),
                 onPressed: (){
-                  var route = new MaterialPageRoute(
-                    builder:(BuildContext context) => DrugBankEdit(
-                      value: resultInfo.text,
-                      Number: resultNumber.text,
-                      LotNumber: resultLotNumber.text,
-                      Period: resultPeriod.text,
-                      Receipt: resultReceipt.text,
-                    ), ///將資料傳遞到下一個畫面
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => DrugBank()),
                   );
-                  Navigator.of(context).push(route);                                       ///切換到下個畫面
                 },
               ),
               RaisedButton(
@@ -269,18 +279,19 @@ class DrugBankEdit extends StatefulWidget {                                     
   final Period;
   final LotNumber;
   final Receipt;
+
   @override
   _DrugBankEditState createState() => _DrugBankEditState();
 }
 
 class _DrugBankEditState extends State<DrugBankEdit> {
-
+  DateTime now = DateTime.now();
   double total = 0;
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Text("進庫資訊上傳"),),
+        appBar: AppBar(title: Center(child:Text("進庫資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -293,6 +304,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                 children: snapshot.data.documents.map((DocumentSnapshot document){
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
+                  String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
                   void queryValues() {
                     Firestore.instance
                         .collection('DrugBank').document(document.documentID).collection('LotNumber')
@@ -467,6 +479,18 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                                   "效期":widget.Period,
                                   "批號":widget.LotNumber,
                                 },
+                              );
+                              Firestore.instance.collection("DrugBank").document(document.documentID)
+                                  .collection("LotNumber")
+                                  .document(widget.LotNumber)
+                                  .collection("user")
+                                  .document(formattedDate)
+                                  .setData(
+                                  {"操作人員":"1233",
+                                    "時間":now,
+                                    "操作":"進貨",
+                                    "數量":widget.Number,
+                                  }
                               );
                             }),
                         RaisedButton(
