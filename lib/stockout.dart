@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:intl/intl.dart';
-class DrugBankOut extends StatefulWidget{                                            ///進庫
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+class DrugBankOut extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
     // 1TODO: implement createState
@@ -12,7 +14,7 @@ class DrugBankOut extends StatefulWidget{                                       
   }
 }
 
-class _DrugBankOutState extends State<DrugBankOut>{                                      ///進庫
+class _DrugBankOutState extends State<DrugBankOut>{
   TextEditingController resultInfo =  TextEditingController(text:"");
   TextEditingController resultNumber = TextEditingController(text:"");   //數量輸入框資料
   TextEditingController resultLotNumber = TextEditingController(text:"");//批號輸入框資料
@@ -65,6 +67,12 @@ class _DrugBankOutState extends State<DrugBankOut>{                             
                         .document(resultLotNumber.text);
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
+                    var image2 = "assets/images/$img---2.jpg";
+                    var imagelist=[
+                      "assets/images/$img.jpg",
+                      "assets/images/$img---2.jpg",
+                      "assets/images/$img---3.jpg",
+                    ];
                     void dataread(){
                       dr.get().then((datasnapshot){
                         period = datasnapshot.data["效期"];
@@ -93,10 +101,23 @@ class _DrugBankOutState extends State<DrugBankOut>{                             
                         title: null,
                         subtitle:
                         Column(children: <Widget>[
-                          Image.asset(
-                            imgage,
-                            width: 250.0,
-                            height: 250.0,
+                          Container(
+                            width: 250,
+                            height: 250,
+                            child: PhotoViewGallery.builder(
+                              itemCount: imagelist.length,
+                              builder: (context,index){
+                                return PhotoViewGalleryPageOptions(
+                                    imageProvider: AssetImage(
+                                      imagelist[index],
+                                    ),
+                                    maxScale: PhotoViewComputedScale.covered * 2,
+                                    minScale: PhotoViewComputedScale.contained * 1
+                                );
+                              },
+                              scrollPhysics: BouncingScrollPhysics(),
+                              loadingChild: Center(child: CircularProgressIndicator(),),
+                            ),
                           ),
                           Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                           Text.rich(
@@ -232,10 +253,7 @@ class _DrugBankOutState extends State<DrugBankOut>{                             
               RaisedButton(
                 child: Text("清除資料"),
                 onPressed: (){
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => DrugBankOut()),
-                  );
+                  resultInfo.clear();
                 },
               ),
               RaisedButton(

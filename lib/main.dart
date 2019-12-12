@@ -7,6 +7,8 @@ import 'stockin.dart';
 import 'stockout.dart';
 import 'DrugReceive.dart';
 import 'DrugWithdrawal.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -281,11 +283,36 @@ class DrugBankPicTest extends StatefulWidget {
 }
 
 class _DrugBankPicTestState extends State<DrugBankPicTest> {
-
+  var image = "assets/images/OAMAR.jpg";
+  var image2 = "assets/images/OAMAR---2.jpg";
+  var image3 = "assets/images/OAMAR---3.jpg";
+  var imagelist = [
+  "assets/images/OAMAR.jpg",
+  "assets/images/OAMAR---2.jpg",
+  "assets/images/OAMAR---3.jpg",
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text("Total:")),
+      body: Center(
+          child: Container(
+            child:
+            PhotoViewGallery.builder(
+              itemCount: imagelist.length,
+              builder: (context,index){
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: AssetImage(
+                      imagelist[index]
+                  ),
+                  maxScale: PhotoViewComputedScale.covered * 2,
+                  minScale: PhotoViewComputedScale.contained * 0.8
+                );
+              },
+            ),
+            width: 280,
+            height: 280,
+          ),
+      ),
     );
   }
 }

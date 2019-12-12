@@ -4,6 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+import 'dart:async';
+import 'dart:io';
 class DrugBank extends StatefulWidget{                                            ///進庫
   @override
   State<StatefulWidget> createState() {
@@ -60,7 +64,14 @@ class DrugBankState extends State<DrugBank>{                                    
                   physics: NeverScrollableScrollPhysics(), ///防止 Singlechildscrollview 與 listview 的捲動功能衝突 (兩個指令都有捲動畫面的功能)
                   children: snapshot.data.documents.map((DocumentSnapshot document){
                     var img = document["系統代碼"];
-                    var imgage = "assets/images/$img.jpg";
+                    var image = "assets/images/$img.jpg";
+                    var image2 = "assets/images/$img---2.jpg";
+                    var imagelist=[
+                      "assets/images/$img.jpg",
+                      "assets/images/$img---2.jpg",
+                      "assets/images/$img---3.jpg",
+                    ];
+
                     void queryValues() {
                       Firestore.instance
                           .collection('DrugBank').document(document.documentID).collection('LotNumber')
@@ -70,6 +81,7 @@ class DrugBankState extends State<DrugBank>{                                    
                         setState(() {total = tempTotal;});
                       });
                     }
+
                     @override
                     initState() {
                       super.initState();
@@ -81,10 +93,23 @@ class DrugBankState extends State<DrugBank>{                                    
                         title: null,
                         subtitle:
                         Column(children: <Widget>[
-                          Image.asset(
-                            imgage,
-                            width: 250.0,
-                            height: 250.0,
+                          Container(
+                            width: 250,
+                            height: 250,
+                            child: PhotoViewGallery.builder(
+                              itemCount: imagelist.length,
+                              builder: (context,index){
+                                return PhotoViewGalleryPageOptions(
+                                    imageProvider: AssetImage(
+                                      imagelist[index],
+                                    ),
+                                    maxScale: PhotoViewComputedScale.covered * 2,
+                                    minScale: PhotoViewComputedScale.contained * 1
+                                );
+                              },
+                              scrollPhysics: BouncingScrollPhysics(),
+                              loadingChild: Center(child: CircularProgressIndicator(),),
+                            ),
                           ),
                           Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                           Text.rich(
@@ -249,10 +274,7 @@ class DrugBankState extends State<DrugBank>{                                    
               RaisedButton(
                 child: Text("清除資料"),
                 onPressed: (){
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => DrugBank()),
-                  );
+                  resultInfo.clear();
                 },
               ),
               RaisedButton(
@@ -280,6 +302,7 @@ class DrugBankEdit extends StatefulWidget {                                     
   final LotNumber;
   final Receipt;
 
+
   @override
   _DrugBankEditState createState() => _DrugBankEditState();
 }
@@ -302,9 +325,72 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                 shrinkWrap: true,
                 scrollDirection: Axis.vertical,
                 children: snapshot.data.documents.map((DocumentSnapshot document){
+                  DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
+                      .collection("LotNumber")
+                      .document(widget.LotNumber);
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
-                  String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+                  String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                  String dateWithT = widget.Period.substring(0, 4) + '-' + widget.Period.substring(4);
+                  String dateWithT2 = dateWithT.substring(0, 7) + '-' + dateWithT.substring(7);
+                  DateTime dateTime = DateTime.parse(dateWithT2);
+                  getdata() async {
+                    final receiptcheck3 = await Firestore.instance
+                        .collection('posts')
+                        .document(document.documentID)
+                        .collection("LotNumber")
+                        .document(widget.LotNumber).get();
+                    if (receiptcheck3 == null || !receiptcheck3.exists) {
+                      Firestore.instance.collection("DrugBank").document(document.documentID)
+                          .collection("LotNumber")
+                          .document(widget.LotNumber)
+                          .setData(
+                        {"數量":widget.Number,
+                          "發票條碼":widget.Receipt,
+                          "效期":widget.Period,
+                          "批號":widget.LotNumber,
+                          "比較效期":dateTime,
+                        },
+                      );
+                      Firestore.instance.collection("DrugBank").document(document.documentID)
+                          .collection("LotNumber")
+                          .document(widget.LotNumber)
+                          .collection("user")
+                          .document(formattedDate)
+                          .setData(
+                          {"操作人員":"1233",
+                            "時間":now,
+                            "操作":"進庫",
+                            "數量":widget.Number,
+                          }
+                      );
+                    }
+                    else{
+                      Firestore.instance.collection("DrugBank").document(document.documentID)
+                          .collection("LotNumber")
+                          .document(widget.LotNumber)
+                          .updateData(
+                        {"數量":widget.Number,
+                          "發票條碼2":widget.Receipt,
+                          "效期":widget.Period,
+                          "批號":widget.LotNumber,
+                          "比較效期":dateTime,
+                        },
+                      );
+                      Firestore.instance.collection("DrugBank").document(document.documentID)
+                          .collection("LotNumber")
+                          .document(widget.LotNumber)
+                          .collection("user")
+                          .document(formattedDate)
+                          .setData(
+                          {"操作人員":"1233",
+                            "時間":now,
+                            "操作":"進庫",
+                            "數量":widget.Number,
+                          }
+                      );
+                    }
+                  }
                   void queryValues() {
                     Firestore.instance
                         .collection('DrugBank').document(document.documentID).collection('LotNumber')
@@ -314,12 +400,14 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                       setState(() {total = tempTotal;});
                     });
                   }
+
                   @override
                   initState() {
                     super.initState();
                     queryValues();
                   }
                   queryValues();
+                  getdata();
                   return
                     ListTile(
                       title: null,
@@ -331,7 +419,6 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                           height: 250.0,
                         ),
                         Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
-
                         Text.rich(
                           TextSpan(
                             children:[
@@ -470,28 +557,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                         RaisedButton(
                             child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
-                              Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("LotNumber")
-                                  .document(widget.LotNumber)
-                                  .setData(
-                                {"數量":widget.Number,
-                                  "發票條碼":widget.Receipt,
-                                  "效期":widget.Period,
-                                  "批號":widget.LotNumber,
-                                },
-                              );
-                              Firestore.instance.collection("DrugBank").document(document.documentID)
-                                  .collection("LotNumber")
-                                  .document(widget.LotNumber)
-                                  .collection("user")
-                                  .document(formattedDate)
-                                  .setData(
-                                  {"操作人員":"1233",
-                                    "時間":now,
-                                    "操作":"進貨",
-                                    "數量":widget.Number,
-                                  }
-                              );
+                              getdata();
                             }),
                         RaisedButton(
                             child: Text("返回進庫"),

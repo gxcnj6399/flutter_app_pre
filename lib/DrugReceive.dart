@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 class DrugBankDrugTake extends StatefulWidget {
   @override
   _DrugBankDrugTakeState createState() => _DrugBankDrugTakeState();
@@ -53,6 +55,12 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                         .document(_currentItemSelected2);
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
+                    var image2 = "assets/images/$img---2.jpg";
+                    var imagelist=[
+                      "assets/images/$img.jpg",
+                      "assets/images/$img---2.jpg",
+                      "assets/images/$img---3.jpg",
+                    ];
                     void dataread(){
                       dr.get().then((datasnapshot){
                         lotnumber = datasnapshot.data["批號"];
@@ -79,10 +87,23 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                         title: null,
                         subtitle:
                         Column(children: <Widget>[
-                          Image.asset(
-                            imgage,
-                            width: 250.0,
-                            height: 250.0,
+                          Container(
+                            width: 250,
+                            height: 250,
+                            child: PhotoViewGallery.builder(
+                              itemCount: imagelist.length,
+                              builder: (context,index){
+                                return PhotoViewGalleryPageOptions(
+                                    imageProvider: AssetImage(
+                                      imagelist[index],
+                                    ),
+                                    maxScale: PhotoViewComputedScale.covered * 2,
+                                    minScale: PhotoViewComputedScale.contained * 1
+                                );
+                              },
+                              scrollPhysics: BouncingScrollPhysics(),
+                              loadingChild: Center(child: CircularProgressIndicator(),),
+                            ),
                           ),
                           Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                           Text.rich(
@@ -260,10 +281,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
               RaisedButton(
                 child: Text("清除資料"),
                 onPressed: (){
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => DrugBankDrugTake()),
-                  );
+                  resultInfoDrugTake.clear();
                 },
               ),
               RaisedButton(
@@ -470,7 +488,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "上傳藥庫:",
+                                text: "藥庫:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
@@ -504,6 +522,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                                       "時間": now,
                                       "操作":"領藥",
                                       "數量":widget.Number,
+                                      "藥庫":widget.littledrugbank,
                                     }
                                 );
                               });

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'main.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 class DrugBankDrugReturn extends StatefulWidget {
   @override
@@ -52,6 +54,12 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                   children: snapshot.data.documents.map((DocumentSnapshot document){
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
+                    var image2 = "assets/images/$img---2.jpg";
+                    var imagelist=[
+                      "assets/images/$img.jpg",
+                      "assets/images/$img---2.jpg",
+                      "assets/images/$img---3.jpg",
+                    ];
                     void queryValues() {
                       Firestore.instance
                           .collection('DrugBank').document(document.documentID).collection('LotNumber')
@@ -72,10 +80,23 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                         title: null,
                         subtitle:
                         Column(children: <Widget>[
-                          Image.asset(
-                            imgage,
-                            width: 250.0,
-                            height: 250.0,
+                          Container(
+                            width: 250,
+                            height: 250,
+                            child: PhotoViewGallery.builder(
+                              itemCount: imagelist.length,
+                              builder: (context,index){
+                                return PhotoViewGalleryPageOptions(
+                                    imageProvider: AssetImage(
+                                      imagelist[index],
+                                    ),
+                                    maxScale: PhotoViewComputedScale.covered * 2,
+                                    minScale: PhotoViewComputedScale.contained * 1
+                                );
+                              },
+                              scrollPhysics: BouncingScrollPhysics(),
+                              loadingChild: Center(child: CircularProgressIndicator(),),
+                            ),
                           ),
                           Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
                           Text.rich(
@@ -231,10 +252,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
               RaisedButton(
                 child: Text("清除資料"),
                 onPressed: (){
-                  Navigator.push(
-                    context,
-                    new MaterialPageRoute(builder: (context) => DrugBankDrugReturn()),
-                  );
+                  resultInfoDrugReturn.clear();
                 },
               ),
               RaisedButton(
@@ -396,6 +414,22 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
+                                text: "藥庫:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: widget.littledrugbank,
+                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+
+
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
                                 text: "退藥數量:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
@@ -430,6 +464,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                                     "時間": now,
                                     "操作":"退藥",
                                     "數量":widget.Number,
+                                    "藥庫":widget.littledrugbank,
                                   }
                                   );
                             }),
