@@ -17,6 +17,8 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
   TextEditingController resultLotNumber = TextEditingController(text:"");
   double total = 0;
   String lotnumber = "";
+  bool flag = false;
+  String choose = "國際條碼";
   var _littledrugbank = ["請選擇","小庫1","小庫2","小庫3"];
   var _currentItemSelected = "請選擇";
 
@@ -25,9 +27,25 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
     DateTime now = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
     return Scaffold(
-      appBar: AppBar(title: Center(child:Text("客戶退藥資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+      appBar: AppBar(title: Center(child:
+      Text("客戶退藥資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.teal,
+      ),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
+          Switch(
+            value: this.flag,
+            activeColor: Colors.red,
+            onChanged: (value) {
+              setState(() {
+                this.flag = value;
+              });
+              if (value==false) {choose = "國際條碼";}
+              else{choose ="院內碼";};
+            },
+          ),
+          Text("模式:$choose",style: TextStyle(fontSize: 20.0,color:Colors.black ),),
           TextField(
             controller: resultInfoDrugReturn,
             onEditingComplete: (){
@@ -44,7 +62,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: resultInfoDrugReturn.text).snapshots(),
+              stream: Firestore.instance.collection('DrugBank').where(choose,isEqualTo: resultInfoDrugReturn.text).snapshots(),
               builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
                 if(!snapshot.hasData) return Text("loading...");
                 return ListView(
@@ -253,6 +271,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                 child: Text("清除資料"),
                 onPressed: (){
                   resultInfoDrugReturn.clear();
+                  setState(() {});
                 },
               ),
               RaisedButton(
@@ -289,7 +308,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("客戶退藥資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("客戶退藥資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -323,7 +342,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                     super.initState();
                     queryValues();
                   }
-                  queryValues();
+                  //queryValues();
                   return
                     ListTile(
                       title: null,

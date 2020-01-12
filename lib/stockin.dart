@@ -8,6 +8,14 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'dart:async';
 import 'dart:io';
+import 'OCR.dart';
+import 'focus_widget.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:image/image.dart' as Img;
+import 'package:path_provider/path_provider.dart';
+import 'package:camera_camera/camera_camera.dart';
+import 'package:barcode_scan/barcode_scan.dart';
+import 'package:image_picker/image_picker.dart';
 class DrugBank extends StatefulWidget{                                            ///進庫
   @override
   State<StatefulWidget> createState() {
@@ -23,8 +31,22 @@ class DrugBankState extends State<DrugBank>{                                    
   TextEditingController resultPeriod = TextEditingController(text:"");   //效期輸入框資料
   TextEditingController resultLotNumber = TextEditingController(text:"");//批號輸入框資料
   double total = 0;
+  bool flag = false;
+  String choose = "國際條碼";
+  File _file;
+  bool isImageLoaded = false ;
+  File _image;
+  String barcode ="";
+  String ocrtext1 = "" ;
+  String ocrtext2 = "" ;
+  final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
 
   @override
+
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
   Future scan() async{
     try{
       String barcode = await BarcodeScanner.scan();
@@ -32,15 +54,114 @@ class DrugBankState extends State<DrugBank>{                                    
     }on PlatformException catch(e){
     }
   }
+  Future getImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _image = image;
+      _file = image;
+      isImageLoaded = true ;
+    });
+  }
+
+
+  void ocr() async {
+    try {
+      File file = await showDialog(
+        context: context,
+        builder: (context) => Camera(
+          mode: CameraMode.fullscreen,
+          imageMask: FocusWidget(
+            color: Colors.black.withOpacity(0.5),
+          ),
+        ),
+      );
+      Img.Image image = Img.decodeJpg(file.readAsBytesSync());
+      var w = image.width;
+      var h = image.height;
+      var ww = w/7;
+      var hh = h/4;
+      var w1 = (ww*3).toInt();
+      var w2 = ww.toInt();
+      var h1 = hh.toInt();
+      var h2 = (hh*2).toInt();
+      Img.Image trimmed = Img.copyCrop(image, w1, h1, w2, h2);
+      print(w1);
+      print(w2);
+      print(h1);
+      print(h2);
+      var time = DateTime.now().millisecondsSinceEpoch;
+      Directory tempDir = await getTemporaryDirectory();
+      String tempPath = tempDir.path;
+      File('$tempPath/$time.jpg').writeAsBytesSync(Img.encodeJpg(trimmed));
+      File tmp = File('$tempPath/$time.jpg');
+
+      if (tmp != null) {
+        setState(() {
+          _file = tmp;
+          _image = tmp ;
+          isImageLoaded = true;
+        });
+      }
+
+
+      try {
+        final FirebaseVisionImage ourImage = FirebaseVisionImage.fromFile(_file);
+        final VisionText readText = await textRecognizer.processImage(ourImage);
+
+        int c = 0 ;
+        String a = '';
+        String b = '';
+
+        for (TextBlock block in readText.blocks) {
+          for (TextLine line in block.lines) {
+            print(line.text);
+            if(a != '' && b == '' ){
+              b = line.text;
+            }
+            if(c == 0){
+              a = line.text;
+              c =1;
+            }
+            setState(() {
+              resultReceipt.text = a;
+              ocrtext2 = b;
+            });
+          }
+        }
+      }catch(e){
+        print(e.toString());
+      }
+
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+
   Widget build(BuildContext context) {
 
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Center(child:Text("進庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+      appBar: AppBar(title: Center(child:
+          Text("進庫資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.orangeAccent,
+      ),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
-          TextField(
-            controller: resultInfo,
+          Switch(
+            value: this.flag,
+            activeColor: Colors.red,
+            onChanged: (value) {
+              setState(() {
+                this.flag = value;
+              });
+              if (value==false) {choose = "國際條碼";}
+              else{choose ="院內碼";};
+            },
+          ),
+          Text("模式:$choose",style: TextStyle(fontSize: 20.0,color:Colors.black ),),
+          TextField(            controller: resultInfo,
             onEditingComplete: (){
               print(resultInfo.text);
             },
@@ -55,7 +176,7 @@ class DrugBankState extends State<DrugBank>{                                    
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: resultInfo.text).snapshots(),
+              stream: Firestore.instance.collection('DrugBank').where(choose,isEqualTo: resultInfo.text).snapshots(),
               builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
                 if(!snapshot.hasData) return Text("loading...");
                 return ListView(
@@ -87,7 +208,7 @@ class DrugBankState extends State<DrugBank>{                                    
                       super.initState();
                       queryValues();
                     }
-                    queryValues();
+                    //queryValues();
                     return
                       ListTile(
                         title: null,
@@ -112,6 +233,7 @@ class DrugBankState extends State<DrugBank>{                                    
                             ),
                           ),
                           Center(child:Text(document["中文"],style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold,color: Colors.black),),),
+
                           Text.rich(
                             TextSpan(
                               children:[
@@ -187,6 +309,7 @@ class DrugBankState extends State<DrugBank>{                                    
                             ),
                           ),
 
+
                           TextField(
                             controller: resultReceipt,
                             onEditingComplete: (){
@@ -199,7 +322,9 @@ class DrugBankState extends State<DrugBank>{                                    
                                 FocusScope.of(context).requestFocus(new FocusNode());
                               }
                               ),
-                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){
+                                ocr();
+                              }),
                             ),
                           ),
                           TextField(
@@ -275,6 +400,7 @@ class DrugBankState extends State<DrugBank>{                                    
                 child: Text("清除資料"),
                 onPressed: (){
                   resultInfo.clear();
+                  setState(() {});
                 },
               ),
               RaisedButton(
@@ -314,7 +440,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("進庫資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("進庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -406,7 +532,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                     super.initState();
                     queryValues();
                   }
-                  queryValues();
+                  //queryValues();
                   getdata();
                   return
                     ListTile(

@@ -15,17 +15,38 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
   TextEditingController resultNumber = TextEditingController(text:"");
   double total = 0;
   String lotnumber = "";
-
+  String choose = "國際條碼";
   var _littledrugbank = ["請選擇","小庫1","小庫2","小庫3"];
   var _currentItemSelected = "請選擇";
   var _dropPeriod = ["請選擇","12367","1277","20144"];
   var _currentItemSelected2 = "請選擇";
+  var qn = [];
+  List<DropdownMenuItem<String>> list = [];
+  bool flag = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Center(child:Text("客戶領藥資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+      appBar: AppBar(title: Center(child:
+        Text("客戶領藥資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.blueGrey,
+      ),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
+
+          Switch(
+            value: this.flag,
+            activeColor: Colors.red,
+            onChanged: (value) {
+              setState(() {
+                this.flag = value;
+              });
+              if (value==false) {choose = "國際條碼";}
+              else{choose ="院內碼";};
+            },
+          ),
+          Text("模式:$choose",style: TextStyle(fontSize: 20.0,color:Colors.black ),),
           TextField(
             controller: resultInfoDrugTake,
             onEditingComplete: (){
@@ -53,6 +74,14 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                     DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
                         .collection("LotNumber")
                         .document(_currentItemSelected2);
+                    Future getPosts() async {
+                      QuerySnapshot qn = await Firestore.instance
+                          .collection('DrugBank')
+                          .document("Clozaril ◎100mg")
+                          .collection('LotNumber')
+                          .orderBy('比較效期', descending: false ).limit(3).getDocuments();
+                      return qn.documents;
+                    }
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
                     var image2 = "assets/images/$img---2.jpg";
@@ -75,13 +104,21 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                         setState(() {total = tempTotal;});
                       });
                     }
+                    var list3=list.toSet().toList();
+                    var check="12345";
+                    var listen=Firestore.instance
+                        .collection('DrugBank')
+                        .document(document.documentID)
+                        .collection("LotNumber")
+                        .orderBy('比較效期', descending: false ).limit(3).snapshots();
+
                     @override
                     initState() {
                       super.initState();
                       queryValues();
                     }
                     queryValues();
-                    dataread();
+
                     return
                       ListTile(
                         title: null,
@@ -184,7 +221,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                            Text("上傳藥庫:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
+                            Text("領藥藥庫:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
                             DropdownButton<String>(
                             items: _littledrugbank.map((String dropDownStringItem){
                               return DropdownMenuItem<String>(
@@ -231,11 +268,16 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                   style: TextStyle(fontSize: 20.0,color: Colors.black),
                                 ),
                                 TextSpan(
-                                  text: lotnumber,
+                                  text: "",
                                   style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                                 ),
                               ],
                             ),
+                          ),
+                          DropdownButton<String>(
+                            items: list3,
+                            hint: Text("請選擇藥庫"),
+                            onChanged: (value)=>print(value),
                           ),
 
                           TextField(
@@ -267,6 +309,36 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                               Navigator.of(context).push(route);                                       ///切換到下個畫面
                             },
                           ),
+                          Text(list.length.toString()),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: listen,
+                            builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+                              if(!snapshot.hasData){
+                                return Center(child: Text("Loading"),);
+                              }
+                              return Container(
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.vertical,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  children:snapshot.data.documents.map((DocumentSnapshot document){
+                                    void add() {
+                                      if (list.length >= 3)
+                                      {SizedBox.shrink();}
+                                      else {
+                                        list.add(new DropdownMenuItem(
+                                          child: Text(document["效期"]),
+                                          value: "1",
+                                        ));
+                                      }
+                                    };
+                                    add();
+                                    return Container();
+                                  }).toList(),
+                                ),
+                              );
+                            },
+                          ),
                         ],),
                         //trailing: IconButton(icon: Icon(Icons.keyboard_arrow_right), onPressed: (){}),
                       );
@@ -282,6 +354,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                 child: Text("清除資料"),
                 onPressed: (){
                   resultInfoDrugTake.clear();
+                  setState(() {});
                 },
               ),
               RaisedButton(
@@ -320,7 +393,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("客戶領藥資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("客戶領藥資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -352,7 +425,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                     super.initState();
                     queryValues();
                   }
-                  queryValues();
+                  //queryValues();
                   return
                     ListTile(
                       title: null,

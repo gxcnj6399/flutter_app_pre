@@ -7,8 +7,13 @@ import 'stockin.dart';
 import 'stockout.dart';
 import 'DrugReceive.dart';
 import 'DrugWithdrawal.dart';
+import 'dart:async';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:firebase_database/firebase_database.dart';
+import "OCR.dart";
+
+
 void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -35,7 +40,10 @@ class MyHomePageState extends State<MyHomePage>{
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text("登入帳號"),),
+      appBar: AppBar(
+        title: Center(child:Text("登入帳號",style: TextStyle(fontSize: 30.0),),),
+        automaticallyImplyLeading: false,
+      ),
       body: new Center(
          child:Column(
           //mainAxisAlignment: MainAxisAlignment.center,
@@ -60,7 +68,7 @@ class MyHomePageState extends State<MyHomePage>{
              width: 300,
              child :
              TextField(
-             decoration: InputDecoration(
+               decoration: InputDecoration(
               //suffix: IconButton(icon: Icon(Icons.close), onPressed:(){
               //  FocusScope.of(context).requestFocus(FocusNode());
               //    }
@@ -83,7 +91,7 @@ class MyHomePageState extends State<MyHomePage>{
              width: 300,
              child:
              TextField(
-              decoration: InputDecoration(
+                decoration: InputDecoration(
               //  suffix: IconButton(icon: Icon(Icons.close), onPressed:(){
               //    FocusScope.of(context).requestFocus(FocusNode());
               //  }
@@ -111,6 +119,24 @@ class MyHomePageState extends State<MyHomePage>{
               },
              ),
             ),
+              RaisedButton(
+                child: new Text("Google登入"),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => new MainPage()),
+                  );
+                },
+            ),
+              RaisedButton(
+                child: new Text("Google登出"),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    new MaterialPageRoute(builder: (context) => new MainPage()),
+                  );
+                },
+            ),
           ],
         )
       ),
@@ -132,7 +158,17 @@ class MainPageState extends State<MainPage>{
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Text("功能頁面"),),
+      appBar: AppBar(title:
+        Text("功能頁面",style: TextStyle(fontSize: 30.0),),
+        leading: IconButton(onPressed:(){
+          Navigator.push(
+            context,
+            new MaterialPageRoute(builder: (context) => new MyHomePage()),
+          );
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
+      ),
       body: new Align(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -228,7 +264,12 @@ class MainPageState extends State<MainPage>{
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
                     icon: Icon(Icons.accessible,size: 100.0,),
-                    onPressed: (){},
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        new MaterialPageRoute(builder: (context) => new MyHomePage2()),
+                      );
+                    },
                     highlightColor: Colors.blue,
                   ),
                 ),
@@ -283,35 +324,36 @@ class DrugBankPicTest extends StatefulWidget {
 }
 
 class _DrugBankPicTestState extends State<DrugBankPicTest> {
-  var image = "assets/images/OAMAR.jpg";
-  var image2 = "assets/images/OAMAR---2.jpg";
-  var image3 = "assets/images/OAMAR---3.jpg";
-  var imagelist = [
-  "assets/images/OAMAR.jpg",
-  "assets/images/OAMAR---2.jpg",
-  "assets/images/OAMAR---3.jpg",
-  ];
+
+  var _currentItemSelected = "請選擇";
+  Future getPosts() async {
+    QuerySnapshot qn = await Firestore.instance
+        .collection('DrugBank')
+        .document("Clozaril ◎100mg")
+        .collection('LotNumber')
+        .orderBy('比較效期', descending: false ).limit(3).getDocuments();
+    return qn.documents;
+  }
+  List<DropdownMenuItem<String>> list = [];
+  List<DropdownMenuItem<String>> list2 = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-          child: Container(
-            child:
-            PhotoViewGallery.builder(
-              itemCount: imagelist.length,
-              builder: (context,index){
-                return PhotoViewGalleryPageOptions(
-                  imageProvider: AssetImage(
-                      imagelist[index]
-                  ),
-                  maxScale: PhotoViewComputedScale.covered * 2,
-                  minScale: PhotoViewComputedScale.contained * 0.8
-                );
-              },
-            ),
-            width: 280,
-            height: 280,
-          ),
+        child:
+        StreamBuilder<QuerySnapshot>(
+          stream: Firestore.instance
+              .collection('DrugBank')
+              .document("Clozaril ◎100mg")
+              .collection('LotNumber')
+              .orderBy('比較效期', descending: false ).limit(3).snapshots(),
+          builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
+            if(!snapshot.hasData){
+              return Center(child: Text("Loading"),);
+            }
+              return null;
+          },
+        ),
       ),
     );
   }

@@ -22,7 +22,8 @@ class _DrugBankOutState extends State<DrugBankOut>{
   String period = "";
   String drugnumber = "";
   String receipt = "";
-
+  bool flag = false;
+  String choose = "國際條碼";
   @override
   Future scan() async{
     try{
@@ -35,9 +36,25 @@ class _DrugBankOutState extends State<DrugBankOut>{
 
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(title: Center(child:Text("退庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+      appBar: AppBar(title: Center(child:
+      Text("退庫資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.redAccent,
+      ),
       body: SingleChildScrollView(
         child: Column(children: <Widget>[
+          Switch(
+            value: this.flag,
+            activeColor: Colors.red,
+            onChanged: (value) {
+              setState(() {
+                this.flag = value;
+              });
+              if (value==false) {choose = "國際條碼";}
+              else{choose ="院內碼";};
+            },
+          ),
+          Text("模式:$choose",style: TextStyle(fontSize: 20.0,color:Colors.black ),),
           TextField(
             controller: resultInfo,
             onEditingComplete: (){
@@ -54,7 +71,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance.collection('DrugBank').where("國際條碼",isEqualTo: resultInfo.text).snapshots(),
+              stream: Firestore.instance.collection('DrugBank').where(choose,isEqualTo: resultInfo.text).snapshots(),
               builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
                 if(!snapshot.hasData) return Text("loading...");
                 return ListView(
@@ -94,7 +111,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
                       super.initState();
                       queryValues();
                     }
-                    queryValues();
+                    //queryValues();
                     dataread();
                     return
                       ListTile(
@@ -254,6 +271,9 @@ class _DrugBankOutState extends State<DrugBankOut>{
                 child: Text("清除資料"),
                 onPressed: (){
                   resultInfo.clear();
+                  setState(() {
+
+                  });
                 },
               ),
               RaisedButton(
@@ -292,7 +312,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("退庫資訊-掃描",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("退庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
