@@ -5,6 +5,16 @@ import 'main.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'dart:async';
+import 'dart:io';
+import 'OCR.dart';
+import 'focus_widget.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:image/image.dart' as Img;
+import 'package:path_provider/path_provider.dart';
+import 'package:camera_camera/camera_camera.dart';
+import 'package:barcode_scan/barcode_scan.dart';
+import 'package:image_picker/image_picker.dart';
 class DrugBankDrugTake extends StatefulWidget {
   @override
   _DrugBankDrugTakeState createState() => _DrugBankDrugTakeState();
@@ -16,15 +26,30 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
   double total = 0;
   String lotnumber = "";
   String choose = "國際條碼";
-  var _littledrugbank = ["請選擇","小庫1","小庫2","小庫3"];
-  var _currentItemSelected = "請選擇";
-  var _dropPeriod = ["請選擇","12367","1277","20144"];
+  var _littledrugbank = ["小庫1","小庫2","小庫3"];
+  var _currentItemSelected = "小庫1";
+  var _dropPeriod = ["請選擇"];
   var _currentItemSelected2 = "請選擇";
   var qn = [];
   List<DropdownMenuItem<String>> list = [];
   bool flag = false;
+  File _file;
+  bool isImageLoaded = false ;
+  File _image;
+  String barcode ="";
+  String ocrtext1 = "" ;
+  String ocrtext2 = "" ;
+  final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
+  var selectItemValue;
 
   @override
+  Future scan() async{
+    try{
+      String barcode = await BarcodeScanner.scan();
+      setState(() => this.resultInfoDrugTake.text = barcode);
+    }on PlatformException catch(e){
+    }
+  }
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Center(child:
@@ -57,9 +82,10 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                 labelText: "輸入條碼",
                 suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
                   FocusScope.of(context).requestFocus(new FocusNode());
+                  setState(() {});
                 }
                 ),
-                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){})
+                suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){scan();})
             ),
           ),
           StreamBuilder<QuerySnapshot>(
@@ -117,7 +143,8 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                       super.initState();
                       queryValues();
                     }
-                    queryValues();
+
+                    //queryValues();
 
                     return
                       ListTile(
@@ -177,7 +204,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                             TextSpan(
                               children:[
                                 TextSpan(
-                                  text: "健保單位:",
+                                  text: "單位:",
                                   style: TextStyle(fontSize: 20.0,color: Colors.black),
                                 ),
                                 TextSpan(
@@ -203,33 +230,33 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                             ),
                           ),
 
-                          Text.rich(
-                            TextSpan(
-                              children:[
-                                TextSpan(
-                                  text: "藥庫總數量:",
-                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
-                                ),
-                                TextSpan(
-                                  text: total.toString(),
-                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                                ),
-                              ],
-                            ),
-                          ),
+//                          Text.rich(
+//                            TextSpan(
+//                              children:[
+//                                TextSpan(
+//                                  text: "藥庫總數量:",
+//                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+//                                ),
+//                                TextSpan(
+//                                  text: total.toString(),
+//                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+//                                ),
+//                              ],
+//                            ),
+//                          ),
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                            Text("領藥藥庫:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
+                            Text("領藥小庫:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
                             DropdownButton<String>(
-                            items: _littledrugbank.map((String dropDownStringItem){
+                              hint: Text("請選擇小庫"),
+                              items: _littledrugbank.map((String dropDownStringItem){
                               return DropdownMenuItem<String>(
                                 value:dropDownStringItem,
                                 child: Text(dropDownStringItem,style: TextStyle(fontSize: 22.0,color: Colors.indigo),),
                               );
                             }).toList(),
-
                             onChanged: (String newValueSelected){
                               setState(() {
                                 this._currentItemSelected = newValueSelected;
@@ -244,13 +271,13 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                             children: <Widget>[
                               Text("選擇效期:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
                               DropdownButton<String>(
+                                hint: Text("請選擇效期"),
                                 items: _dropPeriod.map((String dropDownStringItem){
                                   return DropdownMenuItem<String>(
                                     value:dropDownStringItem,
                                     child: Text(dropDownStringItem,style: TextStyle(fontSize: 22.0,color: Colors.indigo),),
                                   );
                                 }).toList(),
-
                                 onChanged: (String newValueSelected){
                                   setState(() {
                                     this._currentItemSelected2 = newValueSelected;
@@ -259,6 +286,38 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                 value: _currentItemSelected2,
                               ),
                             ],),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                              Text("選擇效期:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
+                              DropdownButton<String>(
+                                items: list3,
+                                hint: Text("請選擇效期"),
+                                onChanged: (String newValueSelected){
+                                  setState(() {
+                                    this.selectItemValue = newValueSelected;
+                                    print(newValueSelected);
+                                  });
+                                },
+                                value: selectItemValue,
+                              ),
+                            ],),
+//                          Row(
+//                            mainAxisAlignment: MainAxisAlignment.center,
+//                            children: <Widget>[
+//                              Text("選擇效期:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
+//                              DropdownButton<String>(
+//                                hint: Text("請選擇效期"),
+//                                items: list3,
+//                                onChanged: (String newValueSelected){
+//                                  setState(() {
+//                                    this._currentItemSelected2 = newValueSelected;
+//                                  });
+//                                },
+//                                value: _currentItemSelected2,
+//                              ),
+//                            ],),
 
                           Text.rich(
                             TextSpan(
@@ -273,11 +332,6 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                 ),
                               ],
                             ),
-                          ),
-                          DropdownButton<String>(
-                            items: list3,
-                            hint: Text("請選擇藥庫"),
-                            onChanged: (value)=>print(value),
                           ),
 
                           TextField(
@@ -294,6 +348,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                               ),
                             ),
                           ),
+
                           RaisedButton(
                             child: Text("下一步"),
                             onPressed: (){
@@ -309,7 +364,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                               Navigator.of(context).push(route);                                       ///切換到下個畫面
                             },
                           ),
-                          Text(list.length.toString()),
+                          //Text(list.length.toString()),
                           StreamBuilder<QuerySnapshot>(
                             stream: listen,
                             builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot){
@@ -328,7 +383,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                       else {
                                         list.add(new DropdownMenuItem(
                                           child: Text(document["效期"]),
-                                          value: "1",
+                                          value: document["效期"],
                                         ));
                                       }
                                     };
@@ -393,7 +448,10 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("客戶領藥資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("客戶領藥資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.blueGrey,
+        ),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -471,7 +529,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "健保單位:",
+                                text: "單位:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
@@ -497,20 +555,20 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                           ),
                         ),
 
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "藥庫總數量:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: total.toString(),
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
+//                        Text.rich(
+//                          TextSpan(
+//                            children:[
+//                              TextSpan(
+//                                text: "藥庫總數量:",
+//                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+//                              ),
+//                              TextSpan(
+//                                text: total.toString(),
+//                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+//                              ),
+//                            ],
+//                          ),
+//                        ),
 
                         Text.rich(
                           TextSpan(
@@ -561,7 +619,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "藥庫:",
+                                text: "領藥小庫:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(

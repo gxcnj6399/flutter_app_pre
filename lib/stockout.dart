@@ -6,6 +6,16 @@ import 'main.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'dart:async';
+import 'dart:io';
+import 'OCR.dart';
+import 'focus_widget.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:image/image.dart' as Img;
+import 'package:path_provider/path_provider.dart';
+import 'package:camera_camera/camera_camera.dart';
+import 'package:barcode_scan/barcode_scan.dart';
+import 'package:image_picker/image_picker.dart';
 class DrugBankOut extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
@@ -24,7 +34,98 @@ class _DrugBankOutState extends State<DrugBankOut>{
   String receipt = "";
   bool flag = false;
   String choose = "國際條碼";
+  File _file;
+  bool isImageLoaded = false ;
+  File _image;
+  String barcode ="";
+  String ocrtext1 = "" ;
+  String ocrtext2 = "" ;
+  final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
+
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  Future getImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _image = image;
+      _file = image;
+      isImageLoaded = true ;
+    });
+  }
+
+  void ocrLotNumber() async {
+    try {
+      File file = await showDialog(
+        context: context,
+        builder: (context) => Camera(
+          mode: CameraMode.fullscreen,
+          imageMask: FocusWidget(
+            color: Colors.black.withOpacity(0.5),
+          ),
+        ),
+      );
+      Img.Image image = Img.decodeJpg(file.readAsBytesSync());
+      var w = image.width;
+      var h = image.height;
+      var ww = w/4;
+      var hh = h/7;
+      var w1 = (ww).toInt();
+      var w2 = (ww*3).toInt();
+      var h1 = (hh*3).toInt();
+      var h2 = (hh*4).toInt();
+      Img.Image trimmed = Img.copyCrop(image, w1, h1, w2, h2);
+      print(w1);
+      print(w2);
+      print(h1);
+      print(h2);
+      var time = DateTime.now().millisecondsSinceEpoch;
+      Directory tempDir = await getTemporaryDirectory();
+      String tempPath = tempDir.path;
+      File('$tempPath/$time.jpg').writeAsBytesSync(Img.encodeJpg(trimmed));
+      File tmp = File('$tempPath/$time.jpg');
+
+      if (tmp != null) {
+        setState(() {
+          _file = tmp;
+          _image = tmp ;
+          isImageLoaded = true;
+        });
+      }
+
+
+      try {
+        final FirebaseVisionImage ourImage = FirebaseVisionImage.fromFile(_file);
+        final VisionText readText = await textRecognizer.processImage(ourImage);
+
+        int c = 0 ;
+        String a = '';
+        String b = '';
+
+        for (TextBlock block in readText.blocks) {
+          for (TextLine line in block.lines) {
+            print(line.text);
+
+            if(c == 0){
+              a = line.text;
+              c =1;
+            }
+            setState(() {
+              resultLotNumber.text = a;
+            });
+          }
+        }
+      }catch(e){
+        print(e.toString());
+      }
+
+    } catch (e) {
+      print(e.toString());
+    }
+  }
   Future scan() async{
     try{
       String barcode = await BarcodeScanner.scan();
@@ -65,6 +166,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
                 labelText: "輸入條碼",
                 suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
                   FocusScope.of(context).requestFocus(new FocusNode());
+                  setState(() {});
                 }
                 ),
                 suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){scan();})
@@ -171,7 +273,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
                             TextSpan(
                               children:[
                                 TextSpan(
-                                  text: "健保單位:",
+                                  text: "單位:",
                                   style: TextStyle(fontSize: 20.0,color: Colors.black),
                                 ),
                                 TextSpan(
@@ -197,20 +299,20 @@ class _DrugBankOutState extends State<DrugBankOut>{
                             ),
                           ),
 
-                          Text.rich(
-                            TextSpan(
-                              children:[
-                                TextSpan(
-                                  text: "藥庫總數量:",
-                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
-                                ),
-                                TextSpan(
-                                  text: total.toString(),
-                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                                ),
-                              ],
-                            ),
-                          ),
+//                          Text.rich(
+//                            TextSpan(
+//                              children:[
+//                                TextSpan(
+//                                  text: "藥庫總數量:",
+//                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+//                                ),
+//                                TextSpan(
+//                                  text: total.toString(),
+//                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+//                                ),
+//                              ],
+//                            ),
+//                          ),
 
                           TextField(
                             controller: resultLotNumber,
@@ -224,7 +326,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
                                 FocusScope.of(context).requestFocus(new FocusNode());
                               }
                               ),
-                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){ocrLotNumber();}),
                             ),
                           ),
                           TextField(
@@ -312,7 +414,10 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("退庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("退庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.redAccent,
+        ),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -375,7 +480,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "健保單位:",
+                                text: "單位:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
@@ -416,20 +521,20 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                           ),
                         ),
 
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "藥庫總數量:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: total.toString(),
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
+//                        Text.rich(
+//                          TextSpan(
+//                            children:[
+//                              TextSpan(
+//                                text: "藥庫總數量:",
+//                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+//                              ),
+//                              TextSpan(
+//                                text: total.toString(),
+//                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+//                              ),
+//                            ],
+//                          ),
+//                        ),
 
 
                         Text.rich(

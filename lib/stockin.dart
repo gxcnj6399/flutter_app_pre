@@ -16,6 +16,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:camera_camera/camera_camera.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 class DrugBank extends StatefulWidget{                                            ///進庫
   @override
   State<StatefulWidget> createState() {
@@ -43,6 +45,18 @@ class DrugBankState extends State<DrugBank>{                                    
 
   @override
 
+  void toast(){
+    Fluttertoast.showToast(
+        msg: "上傳成功!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
+
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -54,6 +68,15 @@ class DrugBankState extends State<DrugBank>{                                    
     }on PlatformException catch(e){
     }
   }
+
+  Future scan2() async{
+    try{
+      String barcode = await BarcodeScanner.scan();
+      setState(() => this.resultReceipt.text = barcode);
+    }on PlatformException catch(e){
+    }
+  }
+
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -64,7 +87,7 @@ class DrugBankState extends State<DrugBank>{                                    
   }
 
 
-  void ocr() async {
+  void ocrPeriod() async {
     try {
       File file = await showDialog(
         context: context,
@@ -78,12 +101,12 @@ class DrugBankState extends State<DrugBank>{                                    
       Img.Image image = Img.decodeJpg(file.readAsBytesSync());
       var w = image.width;
       var h = image.height;
-      var ww = w/7;
-      var hh = h/4;
-      var w1 = (ww*3).toInt();
-      var w2 = ww.toInt();
-      var h1 = hh.toInt();
-      var h2 = (hh*2).toInt();
+      var ww = w/4;
+      var hh = h/7;
+      var w1 = (ww).toInt();
+      var w2 = (ww*3).toInt();
+      var h1 = (hh*3).toInt();
+      var h2 = (hh*4).toInt();
       Img.Image trimmed = Img.copyCrop(image, w1, h1, w2, h2);
       print(w1);
       print(w2);
@@ -115,16 +138,13 @@ class DrugBankState extends State<DrugBank>{                                    
         for (TextBlock block in readText.blocks) {
           for (TextLine line in block.lines) {
             print(line.text);
-            if(a != '' && b == '' ){
-              b = line.text;
-            }
+
             if(c == 0){
               a = line.text;
               c =1;
             }
             setState(() {
-              resultReceipt.text = a;
-              ocrtext2 = b;
+              resultPeriod.text = a;
             });
           }
         }
@@ -137,6 +157,75 @@ class DrugBankState extends State<DrugBank>{                                    
     }
   }
 
+  void ocrLotNumber() async {
+    try {
+      File file = await showDialog(
+        context: context,
+        builder: (context) => Camera(
+          mode: CameraMode.fullscreen,
+          imageMask: FocusWidget(
+            color: Colors.black.withOpacity(0.5),
+          ),
+        ),
+      );
+      Img.Image image = Img.decodeJpg(file.readAsBytesSync());
+      var w = image.width;
+      var h = image.height;
+      var ww = w/4;
+      var hh = h/7;
+      var w1 = (ww).toInt();
+      var w2 = (ww*3).toInt();
+      var h1 = (hh*3).toInt();
+      var h2 = (hh*4).toInt();
+      Img.Image trimmed = Img.copyCrop(image, w1, h1, w2, h2);
+      print(w1);
+      print(w2);
+      print(h1);
+      print(h2);
+      var time = DateTime.now().millisecondsSinceEpoch;
+      Directory tempDir = await getTemporaryDirectory();
+      String tempPath = tempDir.path;
+      File('$tempPath/$time.jpg').writeAsBytesSync(Img.encodeJpg(trimmed));
+      File tmp = File('$tempPath/$time.jpg');
+
+      if (tmp != null) {
+        setState(() {
+          _file = tmp;
+          _image = tmp ;
+          isImageLoaded = true;
+        });
+      }
+
+
+      try {
+        final FirebaseVisionImage ourImage = FirebaseVisionImage.fromFile(_file);
+        final VisionText readText = await textRecognizer.processImage(ourImage);
+
+        int c = 0 ;
+        String a = '';
+        String b = '';
+
+        for (TextBlock block in readText.blocks) {
+          for (TextLine line in block.lines) {
+            print(line.text);
+
+            if(c == 0){
+              a = line.text;
+              c =1;
+            }
+            setState(() {
+              resultLotNumber.text = a;
+            });
+          }
+        }
+      }catch(e){
+        print(e.toString());
+      }
+
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   Widget build(BuildContext context) {
 
@@ -170,6 +259,7 @@ class DrugBankState extends State<DrugBank>{                                    
                 labelText: "輸入條碼",
                 suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
                   FocusScope.of(context).requestFocus(new FocusNode());
+                  setState(() {});
                 }
                 ),
                 suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){scan();})
@@ -268,7 +358,7 @@ class DrugBankState extends State<DrugBank>{                                    
                             TextSpan(
                               children:[
                                 TextSpan(
-                                  text: "健保單位:",
+                                  text: "單位:",
                                   style: TextStyle(fontSize: 20.0,color: Colors.black),
                                 ),
                                 TextSpan(
@@ -294,20 +384,20 @@ class DrugBankState extends State<DrugBank>{                                    
                             ),
                           ),
 
-                          Text.rich(
-                            TextSpan(
-                              children:[
-                                TextSpan(
-                                  text: "藥庫總數量:",
-                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
-                                ),
-                                TextSpan(
-                                  text: total.toString(),
-                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                                ),
-                              ],
-                            ),
-                          ),
+//                          Text.rich(
+//                            TextSpan(
+//                              children:[
+//                                TextSpan(
+//                                  text: "藥庫總數量:",
+//                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+//                                ),
+//                                TextSpan(
+//                                  text: total.toString(),
+//                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+//                                ),
+//                              ],
+//                            ),
+//                          ),
 
 
                           TextField(
@@ -323,10 +413,11 @@ class DrugBankState extends State<DrugBank>{                                    
                               }
                               ),
                               suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){
-                                ocr();
+                                scan2();
                               }),
                             ),
                           ),
+
                           TextField(
                             controller: resultLotNumber,
                             onEditingComplete: (){
@@ -339,7 +430,7 @@ class DrugBankState extends State<DrugBank>{                                    
                                 FocusScope.of(context).requestFocus(new FocusNode());
                               }
                               ),
-                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){ocrLotNumber();}),
                             ),
                           ),
                           TextField(
@@ -354,7 +445,7 @@ class DrugBankState extends State<DrugBank>{                                    
                                 FocusScope.of(context).requestFocus(new FocusNode());
                               }
                               ),
-                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){}),
+                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){ocrPeriod();}),
                             ),
                           ),
                           TextField(
@@ -440,7 +531,10 @@ class _DrugBankEditState extends State<DrugBankEdit> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
-        appBar: AppBar(title: Center(child:Text("進庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),automaticallyImplyLeading: false,),
+        appBar: AppBar(title: Center(child:Text("進庫資訊-確認",style: TextStyle(fontSize: 30.0,fontWeight: FontWeight.bold,))),
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.orangeAccent,
+        ),
         body:
         //Text("${widget.value}"),
         StreamBuilder<QuerySnapshot>(
@@ -454,9 +548,22 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                   DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
                       .collection("LotNumber")
                       .document(widget.LotNumber);
+
+                  void toast(){
+                    Fluttertoast.showToast(
+                        msg: "上傳成功!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIos: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0
+                    );
+                  }
+
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
-                  String formattedDate = DateFormat('yyyy-MM-dd').format(now);
+                  String formattedDate = DateFormat('yyyy-MM-DD').format(now);
                   String dateWithT = widget.Period.substring(0, 4) + '-' + widget.Period.substring(4);
                   String dateWithT2 = dateWithT.substring(0, 7) + '-' + dateWithT.substring(7);
                   DateTime dateTime = DateTime.parse(dateWithT2);
@@ -564,7 +671,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
-                                text: "健保單位:",
+                                text: "單位:",
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
@@ -605,20 +712,20 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                           ),
                         ),
 
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "藥庫總數量:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: total.toString(),
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
+//                        Text.rich(
+//                          TextSpan(
+//                            children:[
+//                              TextSpan(
+//                                text: "藥庫總數量:",
+//                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+//                              ),
+//                              TextSpan(
+//                                text: total.toString(),
+//                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+//                              ),
+//                            ],
+//                          ),
+//                        ),
 
                         Text.rich(
                           TextSpan(
@@ -684,7 +791,9 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             child: Text("確認上傳"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
                               getdata();
+                              toast();
                             }),
+
                         RaisedButton(
                             child: Text("返回進庫"),
                             onPressed: (){
@@ -693,6 +802,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                                 new MaterialPageRoute(builder: (context) => DrugBank()),
                               );
                             }),
+
                       ],),
                     );
                 }).toList(),
