@@ -45,18 +45,6 @@ class DrugBankState extends State<DrugBank>{                                    
 
   @override
 
-  void toast(){
-    Fluttertoast.showToast(
-        msg: "上傳成功!",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIos: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
-  }
-
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -133,7 +121,8 @@ class DrugBankState extends State<DrugBank>{                                    
 
         int c = 0 ;
         String a = '';
-        String b = '';
+        String sw = "";
+        String st = '';
 
         for (TextBlock block in readText.blocks) {
           for (TextLine line in block.lines) {
@@ -143,8 +132,164 @@ class DrugBankState extends State<DrugBank>{                                    
               a = line.text;
               c =1;
             }
+            a= a.replaceAll(" ", "");
+            a= a.replaceAll("/", "");
+            a= a.replaceAll("-", "");
+            a= a.replaceAll(".", "");
+            var list =[];
+            list = a.split("");
+
+            if(sw=="MY")
+            {
+              var str =[0,0,0,0,0,0,"0","1"];
+              str[0]=list[2];
+              str[1]=list[3];
+              str[2]=list[4];
+              str[3]=list[5];
+              str[4]=list[0];
+              str[5]=list[1];
+              st=str.join();
+            }
+            if(sw=="YM")
+            {
+              var str =[0,0,0,0,0,0,"0","1"];
+              str[0]=list[0];
+              str[1]=list[1];
+              str[2]=list[2];
+              str[3]=list[3];
+              str[4]=list[4];
+              str[5]=list[5];
+              st=str.join();
+            }
+            if(sw=="YMD")
+            {
+              st=a;
+            }
+            if(sw=="EMY")
+            {
+              var str =[0,0,0,0,0,0,"0","1"];
+              var list1 =["","",0,0,0,0];
+              if(list[0]=="J"&&list[1]=="A"&&list[2]=="N")
+              {
+                list1[0]= "0";
+                list1[1]= "1";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="F"&&list[1]=="E"&&list[2]=="B")
+              {
+                list1[0]= "0";
+                list1[1]="2";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="M"&&list[1]=="A"&&list[2]=="R")
+              {
+                list1[0]= "0";
+                list1[1]="3";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="A"&&list[1]=="P"&&list[2]=="R")
+              {
+                list1[0]= "0";
+                list1[1]="4";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="M"&&list[1]=="A"&&list[2]=="Y")
+              {
+                list1[0]= "0";
+                list1[1]="5";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="J"&&list[1]=="U"&&list[2]=="N")
+              {
+                list1[0]= "0";
+                list1[1]="6";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="J"&&list[1]=="U"&&list[2]=="L")
+              {
+                list1[0]= "0";
+                list1[1]="7";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="A"&&list[1]=="U"&&list[2]=="G")
+              {
+                list1[0]= "0";
+                list1[1]="8";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="S"&&list[1]=="E"&&list[2]=="P")
+              {
+                list1[0]= "0";
+                list1[1]="9";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="O"&&list[1]=="C"&&list[2]=="T")
+              {
+                list1[0]= "1";
+                list1[1]="0";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="N"&&list[1]=="O"&&list[2]=="V")
+              {
+                list1[0]= "1";
+                list1[1]="1";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+              else if(list[0]=="D"&&list[1]=="E"&&list[2]=="C")
+              {
+                list1[0]= "1";
+                list1[1]="2";
+                list1[2]= list[3];
+                list1[3]= list[4];
+                list1[4]= list[5];
+                list1[5]= list[6];
+              }
+
+
+              str[0]=list1[2];
+              str[1]=list1[3];
+              str[2]=list1[4];
+              str[3]=list1[5];
+              str[4]=list1[0];
+              str[5]=list1[1];
+              st=str.join();
+            }
             setState(() {
-              resultPeriod.text = a;
+              resultPeriod.text = st;
+
             });
           }
         }
@@ -657,11 +802,11 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             children:[
                               TextSpan(
                                 text: "藥名:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document.documentID,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -672,11 +817,11 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             children:[
                               TextSpan(
                                 text: "單位:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["健保單位"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -687,11 +832,11 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             children:[
                               TextSpan(
                                 text: "成份:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["成份"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -702,11 +847,11 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                             children:[
                               TextSpan(
                                 text: "系統代碼:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["系統代碼"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -736,7 +881,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                               ),
                               TextSpan(
                                 text: widget.Receipt,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -751,7 +896,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                               ),
                               TextSpan(
                                 text: widget.LotNumber,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -766,7 +911,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                               ),
                               TextSpan(
                                 text: widget.Period,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -781,7 +926,7 @@ class _DrugBankEditState extends State<DrugBankEdit> {
                               ),
                               TextSpan(
                                 text: widget.Number,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),

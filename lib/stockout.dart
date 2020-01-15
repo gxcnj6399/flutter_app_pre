@@ -16,6 +16,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:camera_camera/camera_camera.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 class DrugBankOut extends StatefulWidget{
   @override
   State<StatefulWidget> createState() {
@@ -43,6 +45,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
   final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
 
   @override
+
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -411,6 +414,17 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
   DateTime now = DateTime.now();
   double total = 0;
   @override
+  void toast(){
+    Fluttertoast.showToast(
+        msg: "上傳成功!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
@@ -542,11 +556,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             children:[
                               TextSpan(
                                 text: "批號:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: widget.LotNumber,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -557,11 +571,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             children:[
                               TextSpan(
                                 text: "入庫時效期:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: widget.Inperiod,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -572,11 +586,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             children:[
                               TextSpan(
                                 text: "發票條碼:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: widget.Inreceipt,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -587,11 +601,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             children:[
                               TextSpan(
                                 text: "發票條碼2:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: "",
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -602,11 +616,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             children:[
                               TextSpan(
                                 text: "發票條碼3:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: "",
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -621,7 +635,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                               ),
                               TextSpan(
                                 text: widget.Indrugnumber,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -632,11 +646,11 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                             children:[
                               TextSpan(
                                 text: "退庫數量:",
-                                style: TextStyle(fontSize: 30.0,color: Colors.black),
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: widget.Number,
-                                style: TextStyle(fontSize: 30.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -645,6 +659,7 @@ class _DrugBankOutEditState extends State<DrugBankOutEdit> {
                         RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
                             child: Text("確認退庫"),
                             onPressed: (){
+                              toast();
                               dr.get().then((datasnapshot){
                                 final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(widget.Number.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)

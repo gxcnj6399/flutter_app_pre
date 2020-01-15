@@ -15,6 +15,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:camera_camera/camera_camera.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 class DrugBankDrugTake extends StatefulWidget {
   @override
   _DrugBankDrugTakeState createState() => _DrugBankDrugTakeState();
@@ -41,6 +44,8 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
   String ocrtext2 = "" ;
   final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
   var selectItemValue;
+  String lotnum = "";
+  String num = "";
 
   @override
   Future scan() async{
@@ -97,17 +102,21 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                   scrollDirection: Axis.vertical,
                   physics: NeverScrollableScrollPhysics(),
                   children: snapshot.data.documents.map((DocumentSnapshot document){
-                    DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
+
+                      Firestore.instance
+                        .collection("DrugBank")
+                        .document(document.documentID)
                         .collection("LotNumber")
-                        .document(_currentItemSelected2);
-                    Future getPosts() async {
-                      QuerySnapshot qn = await Firestore.instance
-                          .collection('DrugBank')
-                          .document("Clozaril ◎100mg")
-                          .collection('LotNumber')
-                          .orderBy('比較效期', descending: false ).limit(3).getDocuments();
-                      return qn.documents;
-                    }
+                        .where("效期", isEqualTo: "$selectItemValue").snapshots().listen((data) =>
+                          data.documents.forEach((doc) => lotnum=doc["批號"]));
+
+                      Firestore.instance
+                          .collection("DrugBank")
+                          .document(document.documentID)
+                          .collection("LotNumber")
+                          .where("效期", isEqualTo: "$selectItemValue").snapshots().listen((data) =>
+                          data.documents.forEach((doc) => num=doc["數量"]));
+
                     var img = document["系統代碼"];
                     var imgage = "assets/images/$img.jpg";
                     var image2 = "assets/images/$img---2.jpg";
@@ -116,11 +125,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                       "assets/images/$img---2.jpg",
                       "assets/images/$img---3.jpg",
                     ];
-                    void dataread(){
-                      dr.get().then((datasnapshot){
-                        lotnumber = datasnapshot.data["批號"];
-                      });
-                    }
+
                     void queryValues() {
                       Firestore.instance
                           .collection('DrugBank').document(document.documentID).collection('LotNumber')
@@ -130,8 +135,8 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                         setState(() {total = tempTotal;});
                       });
                     }
+
                     var list3=list.toSet().toList();
-                    var check="12345";
                     var listen=Firestore.instance
                         .collection('DrugBank')
                         .document(document.documentID)
@@ -145,7 +150,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                     }
 
                     //queryValues();
-
+                    //lot();
                     return
                       ListTile(
                         title: null,
@@ -266,27 +271,6 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                           ),
                           ],),
 
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text("選擇效期:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
-                              DropdownButton<String>(
-                                hint: Text("請選擇效期"),
-                                items: _dropPeriod.map((String dropDownStringItem){
-                                  return DropdownMenuItem<String>(
-                                    value:dropDownStringItem,
-                                    child: Text(dropDownStringItem,style: TextStyle(fontSize: 22.0,color: Colors.indigo),),
-                                  );
-                                }).toList(),
-                                onChanged: (String newValueSelected){
-                                  setState(() {
-                                    this._currentItemSelected2 = newValueSelected;
-                                  });
-                                },
-                                value: _currentItemSelected2,
-                              ),
-                            ],),
-
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
@@ -297,27 +281,11 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                 onChanged: (String newValueSelected){
                                   setState(() {
                                     this.selectItemValue = newValueSelected;
-                                    print(newValueSelected);
                                   });
                                 },
                                 value: selectItemValue,
                               ),
                             ],),
-//                          Row(
-//                            mainAxisAlignment: MainAxisAlignment.center,
-//                            children: <Widget>[
-//                              Text("選擇效期:",style: TextStyle(fontSize: 22.0,color: Colors.black),),
-//                              DropdownButton<String>(
-//                                hint: Text("請選擇效期"),
-//                                items: list3,
-//                                onChanged: (String newValueSelected){
-//                                  setState(() {
-//                                    this._currentItemSelected2 = newValueSelected;
-//                                  });
-//                                },
-//                                value: _currentItemSelected2,
-//                              ),
-//                            ],),
 
                           Text.rich(
                             TextSpan(
@@ -327,7 +295,22 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                   style: TextStyle(fontSize: 20.0,color: Colors.black),
                                 ),
                                 TextSpan(
-                                  text: "",
+                                  text: lotnum,
+                                  style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Text.rich(
+                            TextSpan(
+                              children:[
+                                TextSpan(
+                                  text: "此批號數量:",
+                                  style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                ),
+                                TextSpan(
+                                  text: num,
                                   style: TextStyle(fontSize: 20.0,color: Colors.indigo),
                                 ),
                               ],
@@ -357,8 +340,10 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                                   value:resultInfoDrugTake.text,
                                   Number: resultNumber.text,
                                   LotNumber: lotnumber,
-                                  Period: _currentItemSelected2,
+                                  Period: selectItemValue,
                                   littledrugbank: _currentItemSelected,
+                                  Lotnum:lotnum,
+                                  Num:num,
                                 ), ///將資料傳遞到下一個畫面
                               );
                               Navigator.of(context).push(route);                                       ///切換到下個畫面
@@ -430,12 +415,14 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
 }
 
 class DrugBankDrugTakeEdit extends StatefulWidget {                                       ///病人領藥畫面2
-  DrugBankDrugTakeEdit({Key key, this.value,this.Period,this.LotNumber,this.Number,this.littledrugbank}):super(key:key);
+  DrugBankDrugTakeEdit({Key key, this.value,this.Period,this.LotNumber,this.Number,this.littledrugbank,this.Lotnum,this.Num}):super(key:key);
   String value;
   final Number;
   final Period;
   final LotNumber;
   final littledrugbank;
+  final Lotnum;
+  final Num;
   @override
   _DrugBankDrugTakeEditState createState() => _DrugBankDrugTakeEditState();
 }
@@ -445,6 +432,17 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
   double total = 0;
 
   @override
+  void toast(){
+    Fluttertoast.showToast(
+        msg: "上傳成功!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
@@ -500,11 +498,11 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                             children:[
                               TextSpan(
                                 text: "藥名:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document.documentID,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -515,11 +513,11 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                             children:[
                               TextSpan(
                                 text: "系統代碼:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["系統代碼"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -530,11 +528,11 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                             children:[
                               TextSpan(
                                 text: "單位:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["健保單位"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -545,11 +543,11 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                             children:[
                               TextSpan(
                                 text: "成份:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["成份"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -578,8 +576,8 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                                 style: TextStyle(fontSize: 20.0,color: Colors.black),
                               ),
                               TextSpan(
-                                text: widget.LotNumber,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                text: widget.Lotnum,
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -594,7 +592,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                               ),
                               TextSpan(
                                 text: widget.Period,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -609,7 +607,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                               ),
                               TextSpan(
                                 text: widget.Number,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -624,7 +622,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                               ),
                               TextSpan(
                                 text: widget.littledrugbank,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -633,7 +631,7 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                         RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
                             child: Text("確認領藥"),
                             onPressed: (){
-
+                              toast();
                               dr.get().then((datasnapshot){
                                 final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(widget.Number.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)

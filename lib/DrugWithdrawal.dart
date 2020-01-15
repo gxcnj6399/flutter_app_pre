@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:camera_camera/camera_camera.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class DrugBankDrugReturn extends StatefulWidget {
   @override
@@ -25,6 +26,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
   TextEditingController resultInfoDrugReturn =  TextEditingController(text:"");
   TextEditingController resultNumber = TextEditingController(text:"");
   TextEditingController resultLotNumber = TextEditingController(text:"");
+  TextEditingController resultReason = TextEditingController(text:"");
   double total = 0;
   String lotnumber = "";
   bool flag = false;
@@ -301,22 +303,6 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
 //                            ),
 //                          ),
 
-                          TextField(
-                            controller: resultLotNumber,
-                            onEditingComplete: (){
-                              print(resultLotNumber.text);
-                            },
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.desktop_windows),
-                              labelText: "批號:",
-                              suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
-                                FocusScope.of(context).requestFocus(new FocusNode());
-                              }
-                              ),
-                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){ocrLotNumber();}),
-                            ),
-                          ),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -339,12 +325,26 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                             ],),
 
                           TextField(
+                            controller: resultLotNumber,
+                            onEditingComplete: (){
+                              print(resultLotNumber.text);
+                            },
+                            decoration: InputDecoration(
+                              labelText: "批號:",
+                              suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
+                                FocusScope.of(context).requestFocus(new FocusNode());
+                              }
+                              ),
+                              suffixIcon: IconButton(icon: Icon(Icons.search), onPressed: (){ocrLotNumber();}),
+                            ),
+                          ),
+
+                          TextField(
                             controller: resultNumber,
                             onEditingComplete: (){
                               print(resultNumber.text);
                             },
                             decoration: InputDecoration(
-                              icon: Icon(Icons.desktop_windows),
                               labelText: "輸入數量",
                               suffix: IconButton(icon: Icon(Icons.file_download), onPressed:() {
                                 FocusScope.of(context).requestFocus(new FocusNode());
@@ -352,6 +352,26 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                               ),
                             ),
                           ),
+
+                          Text("退藥說明:",style: TextStyle(fontSize: 20.0,color: Colors.black),),
+                            TextField(
+                              keyboardType: TextInputType.multiline,
+                              maxLines: 10,
+                              controller: resultReason,
+                              onEditingComplete: (){
+                                print(resultReason.text);
+                              },
+                              decoration: InputDecoration(
+                                labelText: "輸入退藥原因",
+                                fillColor: Colors.teal.shade50, filled: true,
+                                suffix: IconButton(icon: Icon(Icons.clear), onPressed:() {
+                                  FocusScope.of(context).requestFocus(new FocusNode());
+                                }
+                                ),
+                              ),
+                            ),
+
+
                           RaisedButton(
                             child: Text("下一步"),
                             onPressed: (){
@@ -361,6 +381,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
                                   Number: resultNumber.text,
                                   LotNumber: resultLotNumber.text,
                                   littledrugbank: _currentItemSelected,
+                                  Reason:resultReason.text,
                                 ), ///將資料傳遞到下一個畫面
                               );
                               Navigator.of(context).push(route);                                       ///切換到下個畫面
@@ -402,11 +423,12 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
 }
 
 class DrugBankDrugReturnEdit extends StatefulWidget {                                       ///病人退藥畫面2
-  DrugBankDrugReturnEdit({Key key,  this.value,this.LotNumber,this.Number,this.littledrugbank}):super(key:key);
+  DrugBankDrugReturnEdit({Key key,  this.value,this.LotNumber,this.Number,this.littledrugbank,this.Reason,}):super(key:key);
   String value;
   final Number;
   final LotNumber;
   final littledrugbank;
+  final Reason;
   @override
   _DrugBankDrugReturnEditState createState() => _DrugBankDrugReturnEditState();
 }
@@ -415,6 +437,17 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
   DateTime now = DateTime.now();
   double total = 0;
   @override
+  void toast(){
+    Fluttertoast.showToast(
+        msg: "上傳成功!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIos: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
@@ -471,12 +504,26 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                           TextSpan(
                             children:[
                               TextSpan(
+                                text: "單位:",
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: document["健保單位"],
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
                                 text: "藥名:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document.documentID,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -487,26 +534,11 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                             children:[
                               TextSpan(
                                 text: "系統代碼:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["系統代碼"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Text.rich(
-                          TextSpan(
-                            children:[
-                              TextSpan(
-                                text: "單位:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
-                              ),
-                              TextSpan(
-                                text: document["健保單位"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -517,11 +549,11 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                             children:[
                               TextSpan(
                                 text: "成份:",
-                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                                style: TextStyle(fontSize: 18.0,color: Colors.black),
                               ),
                               TextSpan(
                                 text: document["成份"],
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 18.0,color: Colors.indigo),
                               ),
                             ],
                           ),
@@ -551,7 +583,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                               ),
                               TextSpan(
                                 text: widget.littledrugbank,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
@@ -567,15 +599,19 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                               ),
                               TextSpan(
                                 text: widget.Number,
-                                style: TextStyle(fontSize: 20.0,color: Colors.indigo),
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
                               ),
                             ],
                           ),
                         ),
 
+                        Text("退藥原因:",style: TextStyle(fontSize: 20.0,color: Colors.black),),
+                        Container(width: 275.0,child:Text(widget.Reason,style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.bold,color: Colors.black45),),),
+
                         RaisedButton(
                             child: Text("確認退藥"),                           ///上傳，預想發票條碼及批號每次皆不相同，所以上傳2是上傳的每筆資料皆以不同序號存放於資料庫，文件名稱為亂碼。
                             onPressed: (){
+                              toast();
                               dr.get().then((datasnapshot){
                                 final fin = (double.parse(datasnapshot.data["數量"]) + double.parse(widget.Number.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
                                 Firestore.instance.collection("DrugBank").document(document.documentID)
@@ -597,6 +633,7 @@ class _DrugBankDrugReturnEditState extends State<DrugBankDrugReturnEdit> {
                                     "操作":"退藥",
                                     "數量":widget.Number,
                                     "藥庫":widget.littledrugbank,
+                                    "退庫說明":widget.Reason,
                                   }
                                   );
                             }),

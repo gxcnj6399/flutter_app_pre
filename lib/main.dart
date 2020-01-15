@@ -154,6 +154,10 @@ class MainPage extends StatefulWidget{
 }
 
 class MainPageState extends State<MainPage>{
+  var image = "assets/images/4.JPG";
+  var image2 = "assets/images/5.JPG";
+  var image3 = "assets/images/6.JPG";
+  var image4 = "assets/images/7.JPG";
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -176,12 +180,12 @@ class MainPageState extends State<MainPage>{
             Row(
               children: <Widget>[
                 Container(
-                  margin: EdgeInsets.only(left:25.0),
+                  margin: EdgeInsets.only(left:20.0),
                   height:100.0, width:100.0,
                     child:
                     IconButton(
                       //padding: EdgeInsets.all(0.0),
-                      icon: Icon(Icons.cloud_download,size: 100.0,),
+                      icon: Icon(Icons.cloud_download,size: 95.0,),
                       onPressed: (){
                         Navigator.push(
                           context,
@@ -191,12 +195,12 @@ class MainPageState extends State<MainPage>{
                     ),
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 25.0),
+                  margin: EdgeInsets.only(left: 20.0),
                   height:100.0, width:100.0,
                   child:
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.desktop_windows,size: 100.0,),
+                    icon: Icon(Icons.cloud_upload,size: 95.0,),
                     onPressed: (){
                       Navigator.push(
                         context,
@@ -207,12 +211,12 @@ class MainPageState extends State<MainPage>{
                   ),
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 25.0),
+                  margin: EdgeInsets.only(left: 20.0),
                   height:100.0, width:100.0,
                   child:
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.drafts,size: 100.0,),
+                    icon: Icon(Icons.remove,size: 95.0,),
                     onPressed: (){
                       Navigator.push(
                         context,
@@ -227,12 +231,12 @@ class MainPageState extends State<MainPage>{
             Row(
               children: <Widget>[
                 Container(
-                  margin: EdgeInsets.only(left:25.0),
+                  margin: EdgeInsets.only(left:20.0),
                   height:100.0, width:100.0,
                   child:
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.calendar_today,size: 100.0,),
+                    icon: Icon(Icons.add,size: 95.0,),
                     onPressed: (){
                       Navigator.push(
                         context,
@@ -242,75 +246,69 @@ class MainPageState extends State<MainPage>{
                   ),
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 25.0),
+                  margin: EdgeInsets.only(left: 20.0),
                   height:100.0, width:100.0,
                   child:
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.account_box,size: 100.0,),
+                    icon: Icon(Icons.account_box,size: 95.0,),
                     onPressed: (){
-                      Navigator.push(
-                        context,
-                        new MaterialPageRoute(builder: (context) => new DrugBankPicTest()),
-                      );
+
                     },
                     highlightColor: Colors.blue,
                   ),
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 25.0),
+                  margin: EdgeInsets.only(left: 20.0),
                   height:100.0, width:100.0,
                   child:
                   IconButton(
                     //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.accessible,size: 100.0,),
+                    icon: Icon(Icons.accessible,size: 95.0,),
                     onPressed: (){
-                      Navigator.push(
-                        context,
-                        new MaterialPageRoute(builder: (context) => new MyHomePage2()),
-                      );
+
                     },
                     highlightColor: Colors.blue,
                   ),
                 ),
               ],
             ),
-            Row(
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.only(left:25.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.edit,size: 100.0,),
-                    onPressed: (){},
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 25.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.settings,size: 100.0,),
-                    onPressed: (){},
-                    highlightColor: Colors.blue,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 25.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.account_box,size: 100.0,),
-                    onPressed: (){},
-                    highlightColor: Colors.blue,
-                  ),
-                ),
-              ],
-            ),
+//            Row(
+//              children: <Widget>[
+//                Container(
+//                  margin: EdgeInsets.only(left:25.0),
+//                  height:100.0, width:100.0,
+//                  child:
+//                  IconButton(
+//                    //padding: EdgeInsets.all(0.0),
+//                    icon: Icon(Icons.edit,size: 100.0,),
+//                    onPressed: (){},
+//                  ),
+//                ),
+//                Container(
+//                  margin: EdgeInsets.only(left: 25.0),
+//                  height:100.0, width:100.0,
+//                  child:
+//                  IconButton(
+//                    //padding: EdgeInsets.all(0.0),
+//                    icon: Icon(Icons.settings,size: 100.0,),
+//                    onPressed: (){},
+//                    highlightColor: Colors.blue,
+//                  ),
+//                ),
+//                Container(
+//                  margin: EdgeInsets.only(left: 25.0),
+//                  height:100.0, width:100.0,
+//                  child:
+//                  IconButton(
+//                    //padding: EdgeInsets.all(0.0),
+//                    icon: Icon(Icons.account_box,size: 100.0,),
+//                    onPressed: (){},
+//                    highlightColor: Colors.blue,
+//                  ),
+//                ),
+//              ],
+//            ),
           ],
         ),
       ),
