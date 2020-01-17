@@ -31,14 +31,10 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
   String choose = "國際條碼";
   var _littledrugbank = ["小庫1","小庫2","小庫3"];
   var _currentItemSelected = "小庫1";
-  var _dropPeriod = ["請選擇"];
-  var _currentItemSelected2 = "請選擇";
   var qn = [];
   List<DropdownMenuItem<String>> list = [];
   bool flag = false;
-  File _file;
   bool isImageLoaded = false ;
-  File _image;
   String barcode ="";
   String ocrtext1 = "" ;
   String ocrtext2 = "" ;
@@ -46,6 +42,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
   var selectItemValue;
   String lotnum = "";
   String num = "";
+  final focusNode = FocusNode();
 
   @override
   Future scan() async{
@@ -259,7 +256,7 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
                               items: _littledrugbank.map((String dropDownStringItem){
                               return DropdownMenuItem<String>(
                                 value:dropDownStringItem,
-                                child: Text(dropDownStringItem,style: TextStyle(fontSize: 22.0,color: Colors.indigo),),
+                                child: Text(dropDownStringItem,),
                               );
                             }).toList(),
                             onChanged: (String newValueSelected){
@@ -319,9 +316,9 @@ class _DrugBankDrugTakeState extends State<DrugBankDrugTake> {
 
                           TextField(
                             controller: resultNumber,
-                            onEditingComplete: (){
-                              print(resultNumber.text);
-                            },
+                            keyboardType: TextInputType.numberWithOptions(),
+                            onEditingComplete: (){print(resultNumber.text);},
+                            textInputAction: TextInputAction.done,
                             decoration: InputDecoration(
                               icon: Icon(Icons.desktop_windows),
                               labelText: "輸入數量",
@@ -430,8 +427,9 @@ class DrugBankDrugTakeEdit extends StatefulWidget {                             
 class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
   DateTime now = DateTime.now();
   double total = 0;
-
-  @override
+  String num="";
+  String numm ="";
+   @override
   void toast(){
     Fluttertoast.showToast(
         msg: "上傳成功!",
@@ -463,7 +461,8 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                 children: snapshot.data.documents.map((DocumentSnapshot document){
                   DocumentReference dr = Firestore.instance.collection("DrugBank").document(document.documentID)
                       .collection("LotNumber")
-                      .document(widget.LotNumber);
+                      .document(widget.Lotnum);
+
                   var img = document["系統代碼"];
                   var imgage = "assets/images/$img.jpg";
                   String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
@@ -628,33 +627,84 @@ class _DrugBankDrugTakeEditState extends State<DrugBankDrugTakeEdit> {
                           ),
                         ),
 
+                        Text.rich(
+                          TextSpan(
+                            children:[
+                              TextSpan(
+                                text: "領藥小庫:",
+                                style: TextStyle(fontSize: 20.0,color: Colors.black),
+                              ),
+                              TextSpan(
+                                text: widget.littledrugbank,
+                                style: TextStyle(fontSize: 20.0,color: Colors.blueGrey),
+                              ),
+                            ],
+                          ),
+                        ),
+
                         RaisedButton(                                            ///退庫與入庫1功能相同，在退庫時每次上傳都會在相同效期的文件內扣除藥品數量
                             child: Text("確認領藥"),
                             onPressed: (){
                               toast();
                               dr.get().then((datasnapshot){
-                                final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(widget.Number.toString())).toString(); ///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
-                                Firestore.instance.collection("DrugBank").document(document.documentID)
-                                    .collection("LotNumber")
-                                    .document(widget.LotNumber)
-                                    .updateData(                                ///上傳運算後以及輸入框內的資料並完成領藥動作
-                                  {"數量":fin,
-                                  },
-                                );
-                                Firestore.instance.collection("DrugBank").document(document.documentID)
-                                    .collection("LotNumber")
-                                    .document(widget.LotNumber)
-                                    .collection("user")
-                                    .document(formattedDate)
-                                    .setData(
-                                    {"操作人員":"1233",
-                                      "時間": now,
-                                      "操作":"領藥",
-                                      "數量":widget.Number,
-                                      "藥庫":widget.littledrugbank,
-                                    }
-                                );
-                              });
+                                final fin = (double.parse(datasnapshot.data["數量"]) - double.parse(widget.Number.toString())).toString();///此處先讀取資料庫藥品數量在扣除輸入的藥品數量
+                                num = fin;
+                                if(double.parse(fin)==0)
+                                {
+                                  Firestore.instance.collection("DrugBank").document(document.documentID)
+                                      .collection("LotNumber")
+                                      .document(widget.Lotnum)
+                                      .delete();
+                                  Firestore.instance.collection("DrugBankOld").document(document.documentID)
+                                      .collection("LotNumber")
+                                      .document(widget.Lotnum)
+                                      .setData(
+                                      {"操作人員":"1233",
+                                        "時間": now,
+                                        "操作":"領藥",
+                                        "數量":0,
+                                        "藥庫":widget.littledrugbank,
+                                      }
+                                  );
+                                  Firestore.instance.collection("DrugBankOld").document(document.documentID)
+                                      .collection("LotNumber")
+                                      .document(widget.Lotnum)
+                                      .collection("user")
+                                      .document(formattedDate)
+                                      .setData(
+                                      {"操作人員":"1233",
+                                        "時間": now,
+                                        "操作":"領藥",
+                                        "數量":widget.Number,
+                                        "藥庫":widget.littledrugbank,
+                                      }
+                                  );
+                                }
+                                else{
+                                  Firestore.instance.collection("DrugBank").document(document.documentID)
+                                      .collection("LotNumber")
+                                      .document(widget.Lotnum)
+                                      .updateData(                                ///上傳運算後以及輸入框內的資料並完成領藥動作
+                                    {"數量":fin,
+                                    },
+                                  );
+                                  Firestore.instance.collection("DrugBank").document(document.documentID)
+                                      .collection("LotNumber")
+                                      .document(widget.Lotnum)
+                                      .collection("user")
+                                      .document(formattedDate)
+                                      .setData(
+                                      {"操作人員":"1233",
+                                        "時間": now,
+                                        "操作":"領藥",
+                                        "數量":widget.Number,
+                                        "藥庫":widget.littledrugbank,
+                                      }
+                                  );
+                                }
+                              }
+                              );
+                              print(num);
                             }),
 
                         RaisedButton(

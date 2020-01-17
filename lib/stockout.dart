@@ -334,6 +334,7 @@ class _DrugBankOutState extends State<DrugBankOut>{
                           ),
                           TextField(
                             controller: resultNumber,
+                            keyboardType: TextInputType.numberWithOptions(),
                             onEditingComplete: (){
                               print(resultNumber.text);
                             },

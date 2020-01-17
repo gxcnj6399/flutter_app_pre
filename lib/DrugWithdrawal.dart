@@ -341,6 +341,7 @@ class _DrugBankDrugReturnState extends State<DrugBankDrugReturn> {
 
                           TextField(
                             controller: resultNumber,
+                            keyboardType: TextInputType.numberWithOptions(),
                             onEditingComplete: (){
                               print(resultNumber.text);
                             },

@@ -42,6 +42,7 @@ class DrugBankState extends State<DrugBank>{                                    
   String ocrtext1 = "" ;
   String ocrtext2 = "" ;
   final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
+  String type = "";
 
   @override
 
@@ -76,6 +77,8 @@ class DrugBankState extends State<DrugBank>{                                    
 
 
   void ocrPeriod() async {
+    String sw = "";
+    sw=type;
     try {
       File file = await showDialog(
         context: context,
@@ -121,7 +124,6 @@ class DrugBankState extends State<DrugBank>{                                    
 
         int c = 0 ;
         String a = '';
-        String sw = "";
         String st = '';
 
         for (TextBlock block in readText.blocks) {
@@ -289,7 +291,6 @@ class DrugBankState extends State<DrugBank>{                                    
             }
             setState(() {
               resultPeriod.text = st;
-
             });
           }
         }
@@ -427,6 +428,8 @@ class DrugBankState extends State<DrugBank>{                                    
                       "assets/images/$img---2.jpg",
                       "assets/images/$img---3.jpg",
                     ];
+
+                    type=document["效期類型"];
 
                     void queryValues() {
                       Firestore.instance
@@ -580,6 +583,7 @@ class DrugBankState extends State<DrugBank>{                                    
                           ),
                           TextField(
                             controller: resultPeriod,
+                            keyboardType: TextInputType.numberWithOptions(),
                             onEditingComplete: (){
                               print(resultPeriod.text);
                             },
@@ -595,6 +599,7 @@ class DrugBankState extends State<DrugBank>{                                    
                           ),
                           TextField(
                             controller: resultNumber,
+                            keyboardType: TextInputType.numberWithOptions(),
                             onEditingComplete: (){
                               print(resultNumber.text);
                             },

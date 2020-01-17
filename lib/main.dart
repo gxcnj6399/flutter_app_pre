@@ -12,6 +12,9 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:firebase_database/firebase_database.dart';
 import "OCR.dart";
+import 'package:imagebutton/imagebutton.dart';
+import 'package:flutter/services.dart';
+
 
 
 void main() => runApp(MyApp());
@@ -19,6 +22,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       title: 'Flutter Demo',
       home: MyHomePage(),
@@ -179,136 +186,72 @@ class MainPageState extends State<MainPage>{
           children: <Widget>[
             Row(
               children: <Widget>[
-                Container(
-                  margin: EdgeInsets.only(left:20.0),
-                  height:100.0, width:100.0,
-                    child:
-                    IconButton(
-                      //padding: EdgeInsets.all(0.0),
-                      icon: Icon(Icons.cloud_download,size: 95.0,),
-                      onPressed: (){
-                        Navigator.push(
-                          context,
-                          new MaterialPageRoute(builder: (context) => new DrugBank()),
-                        );
-                      },
-                    ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 20.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.cloud_upload,size: 95.0,),
-                    onPressed: (){
-                      Navigator.push(
-                        context,
-                        new MaterialPageRoute(builder: (context) => new DrugBankOut()),
-                      );
-                    },
-                    highlightColor: Colors.blue,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 20.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.remove,size: 95.0,),
-                    onPressed: (){
-                      Navigator.push(
-                        context,
-                        new MaterialPageRoute(builder: (context) => new DrugBankDrugTake()),
-                      );
-                    },
-                    highlightColor: Colors.blue,
-                  ),
-                ),
+                Expanded(
+                    child:Container(
+                      height:125,
+                      width:125,
+                      child:IconButton(
+                          icon: Image.asset(image),
+                          onPressed: (){
+                            Navigator.push(
+                              context,
+                              new MaterialPageRoute(builder: (context) => new DrugBank()),
+                            );
+                          }
+                      ),
+                    )),
+                Expanded(
+                    child:Container(
+                      height:125,
+                      width:125,
+                      child:IconButton(
+                          icon: Image.asset(image2),
+                          onPressed: (){
+                            Navigator.push(
+                              context,
+                              new MaterialPageRoute(builder: (context) => new DrugBankOut()),
+                            );
+                          }
+                      ),
+                    )),
               ],
             ),
             Row(
               children: <Widget>[
-                Container(
-                  margin: EdgeInsets.only(left:20.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.add,size: 95.0,),
-                    onPressed: (){
-                      Navigator.push(
-                        context,
-                        new MaterialPageRoute(builder: (context) => new DrugBankDrugReturn()),
-                      );
-                    },
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 20.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.account_box,size: 95.0,),
-                    onPressed: (){
-
-                    },
-                    highlightColor: Colors.blue,
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 20.0),
-                  height:100.0, width:100.0,
-                  child:
-                  IconButton(
-                    //padding: EdgeInsets.all(0.0),
-                    icon: Icon(Icons.accessible,size: 95.0,),
-                    onPressed: (){
-
-                    },
-                    highlightColor: Colors.blue,
-                  ),
-                ),
+                Expanded(
+                    child:Container(
+                      height:125,
+                      width:125,
+                      child:IconButton(
+                          icon: Image.asset(image3),
+                          onPressed: (){
+                            Navigator.push(
+                              context,
+                              new MaterialPageRoute(builder: (context) => new DrugBankDrugTakeEdit()),
+                            );
+                          }
+                      ),
+                    )),
+                Expanded(
+                    child:Container(
+                      height:125,
+                      width:125,
+                      child:IconButton(
+                          icon: Image.asset(image4),
+                          onPressed: (){
+                            Navigator.push(
+                              context,
+                              new MaterialPageRoute(builder: (context) => new DrugBankDrugReturn()),
+                            );
+                          }
+                      ),
+                    )),
               ],
             ),
-//            Row(
-//              children: <Widget>[
-//                Container(
-//                  margin: EdgeInsets.only(left:25.0),
-//                  height:100.0, width:100.0,
-//                  child:
-//                  IconButton(
-//                    //padding: EdgeInsets.all(0.0),
-//                    icon: Icon(Icons.edit,size: 100.0,),
-//                    onPressed: (){},
-//                  ),
-//                ),
-//                Container(
-//                  margin: EdgeInsets.only(left: 25.0),
-//                  height:100.0, width:100.0,
-//                  child:
-//                  IconButton(
-//                    //padding: EdgeInsets.all(0.0),
-//                    icon: Icon(Icons.settings,size: 100.0,),
-//                    onPressed: (){},
-//                    highlightColor: Colors.blue,
-//                  ),
-//                ),
-//                Container(
-//                  margin: EdgeInsets.only(left: 25.0),
-//                  height:100.0, width:100.0,
-//                  child:
-//                  IconButton(
-//                    //padding: EdgeInsets.all(0.0),
-//                    icon: Icon(Icons.account_box,size: 100.0,),
-//                    onPressed: (){},
-//                    highlightColor: Colors.blue,
-//                  ),
-//                ),
-//              ],
-//            ),
+            Row(children: <Widget>[
+              Expanded(child: Container(width:125,height:125,child: null,)),
+              Expanded(child: Container(width:125,height:125,child: null,)),
+            ],)
           ],
         ),
       ),
